@@ -76,4 +76,12 @@ ppgia-puc-pr-faed/
 
 ---
 
+## Links
+
+| Recurso | Link |
+|---|---|
+| Artigo (Overleaf) | https://www.overleaf.com/2469815365qdgwcmktybkw#0a9d97 |
+
+---
+
 *PPGIA/PUC-PR · 2026*
