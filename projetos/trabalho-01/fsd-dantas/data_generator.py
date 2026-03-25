@@ -28,17 +28,19 @@ from pathlib import Path
 # Banco de nomes simplificado para geração realista sem dependências externas
 # ---------------------------------------------------------------------------
 _NOMES = [
-    "Ana", "Bruno", "Carlos", "Diana", "Eduardo", "Fernanda", "Gabriel",
-    "Helena", "Igor", "Julia", "Lucas", "Mariana", "Nicolas", "Olivia",
-    "Paulo", "Queila", "Rafael", "Sabrina", "Thiago", "Ursula", "Victor",
-    "Wendy", "Xavier", "Yasmin", "Zeca",
+    "Johnn", "Ana", "Bruno", "Carlos", "Diana", "Eduardo", "Fernanda", 
+    "Gabriel", "Helena", "Igor", "Julia", "Lucas", "Mariana", "Nicolas", 
+    "Olivia", "Paulo", "Queila", "Rafael", "Kathlein", "Sabrina", "Thiago",
+    "Ursula", "Victor", "Wendy", "Xavier", "Guilherme","Yasmin", "Zeca", 
+    "Daenerys"
 ]
 
 _SOBRENOMES = [
-    "Alves", "Barbosa", "Carvalho", "Dias", "Esteves", "Ferreira", "Gomes",
-    "Hernandes", "Ito", "Jesus", "Klein", "Lima", "Martins", "Nascimento",
-    "Oliveira", "Pereira", "Queiroz", "Ribeiro", "Santos", "Teixeira",
-    "Ueda", "Vargas", "Wagner", "Xavier", "Yamamoto", "Zago",
+    "Alves", "Barbosa", "Carvalho", "Doe", "Esteves", "Ferreira", "Gomes",
+    "Hernandes", "Ito", "Jesus", "Klein", "Lannister", "Lima", "Martins",
+    "Nascimento", "Oliveira", "Pereira", "Queiroz", "Ribeiro", "Santos", 
+    "Teixeira", "Ueda", "Vargas", "Wagner", "Xavier", "Yamamoto", "Zago",
+    "Piparotte"
 ]
 
 

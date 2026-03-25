@@ -17,6 +17,7 @@ venv/
 env/
 
 # ── Dados gerados (grandes, reproduzíveis via script) ────────────────────────
+projetos/trabalho-01/dados/
 projetos/trabalho-01/fsd-dantas/dados/
 projetos/trabalho-01/rafaCS2002/genData/
 projetos/trabalho-01/rafaCS2002/genDataSequence/
