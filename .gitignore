@@ -1,2 +1,41 @@
+# ── Agente / Governança ─────────────────────────────────────────────────────
 CLAUDE.md
 AGENTS.md
+
+# ── Python ───────────────────────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.egg-info/
+.eggs/
+dist/
+build/
+*.whl
+.venv/
+venv/
+env/
+
+# ── Dados gerados (grandes, reproduzíveis via script) ────────────────────────
+projetos/trabalho-01/fsd-dantas/dados/
+projetos/trabalho-01/rafaCS2002/genData/
+projetos/trabalho-01/rafaCS2002/genDataSequence/
+
+# ── Resultados e gráficos gerados (reproduzíveis via script) ─────────────────
+projetos/trabalho-01/**/genResults/
+projetos/trabalho-01/**/genGraph/
+projetos/trabalho-01/**/resultados/
+projetos/trabalho-01/**/graficos/
+
+# ── Editores e IDEs ──────────────────────────────────────────────────────────
+.vscode/
+.idea/
+*.suo
+*.user
+*.swp
+*~
+
+# ── OS ───────────────────────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+desktop.ini
