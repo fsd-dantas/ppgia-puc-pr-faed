@@ -12,9 +12,10 @@ Comparar o desempenho de arrays lineares, árvores de busca binária (BST) e tab
 
 ```
 trabalho-01/
-├── fsd-dantas/       → implementação: fsd-dantas
-├── rafaCS2002/       → implementação: RafaCS2002
-└── final-version/    → versão consolidada do grupo (entrega final)
+├── fsd-dantas/              → implementação: fsd-dantas
+├── rafaCS2002/              → implementação: RafaCS2002
+├── guilherme-campagnoli/    → implementação: guilherme-campagnoli
+└── final-version/           → versão consolidada do grupo (entrega final)
 ```
 
 ## Entregáveis
@@ -31,7 +32,8 @@ A versão final consolidada está em [`final-version/`](final-version/).
 
 ## Integrantes
 
-| GitHub | Contribuição |
-|---|---|
-| [fsd-dantas](https://github.com/fsd-dantas) | Gerador de dados, BST AVL, benchmarking |
-| [RafaCS2002](https://github.com/RafaCS2002) | Array linear, BST, tabela hash, visualização |
+| GitHub |
+|---|
+| [fsd-dantas](https://github.com/fsd-dantas) |
+| [RafaCS2002](https://github.com/RafaCS2002) |
+| [guilherme-campagnoli](https://github.com/guilherme-campagnoli) |
