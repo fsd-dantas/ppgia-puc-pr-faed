@@ -1,6 +1,6 @@
 # fsd-dantas — Implementação
 
-Implementação individual de fsd-dantas para o Trabalho 01.
+ Contribuição de fsd-dantas para o Trabalho 01.
 
 ## Arquivos
 

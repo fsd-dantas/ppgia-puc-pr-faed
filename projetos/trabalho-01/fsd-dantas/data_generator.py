@@ -226,6 +226,18 @@ def medir_memoria(n: int, seed: int = 42) -> dict:
 # Execução direta
 # ---------------------------------------------------------------------------
 
+def _fmt_int(n: int) -> str:
+    """Formata inteiro no padrão brasileiro: 1.234.567"""
+    return f"{n:,}".replace(",", ".")
+
+
+def _fmt_brl(v: float) -> str:
+    """Formata valor monetário no padrão brasileiro: R$ 1.234,56"""
+    s = f"{v:,.2f}"                          # "1,234.56"  (americano)
+    s = s.replace(",", "X").replace(".", ",").replace("X", ".")
+    return f"R$ {s}"
+
+
 if __name__ == "__main__":
     import argparse
 
@@ -249,7 +261,7 @@ if __name__ == "__main__":
 
     for n in args.volumes:
         print(f"\n{'='*52}")
-        print(f"  N = {n:>7,}")
+        print(f"  N = {_fmt_int(n):>11}")
         print(f"{'='*52}")
 
         dados = gerar_registros(n)
@@ -257,9 +269,14 @@ if __name__ == "__main__":
         sals  = [r["salario"]   for r in dados]
 
         print(f"  Matriculas unicas : {len(set(mats)) == n}")
-        print(f"  Matricula min/max : {min(mats):,} / {max(mats):,}")
-        print(f"  Salario   min/max : R$ {min(sals):,.2f} / R$ {max(sals):,.2f}")
-        print(f"  Exemplo           : {dados[0]}")
+        print(f"  Matricula min/max : {_fmt_int(min(mats))} / {_fmt_int(max(mats))}")
+        print(f"  Salario   min/max : {_fmt_brl(min(sals))} / {_fmt_brl(max(sals))}")
+        ex = dados[0]
+        print(f"  Exemplo registro  :")
+        print(f"    Matricula : {_fmt_int(ex['matricula'])}")
+        print(f"    Nome      : {ex['nome']}")
+        print(f"    Salario   : {_fmt_brl(ex['salario'])}")
+        print(f"    Setor     : {ex['cod_setor']}")
 
         if args.csv:
             dest = PASTA_CSV / f"registros_{n}.csv"
