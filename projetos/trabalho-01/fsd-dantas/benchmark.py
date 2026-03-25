@@ -340,4 +340,12 @@ if __name__ == "__main__":
         help=f"Rodadas independentes por cenario (default: {RODADAS_DEFAULT})"
     )
     args = parser.parse_args()
+    _t0 = time.perf_counter()
+    print(f"\n{'-'*78}")
+    print(f"  Inicio : {datetime.now().strftime('%d/%m/%Y %H:%M:%S')}")
+    print(f"{'-'*78}")
     main(volumes=args.volumes, rodadas=args.rodadas)
+    print(f"\n{'-'*78}")
+    print(f"  Fim    : {datetime.now().strftime('%d/%m/%Y %H:%M:%S')}")
+    print(f"  Duracao: {time.perf_counter() - _t0:.2f}s")
+    print(f"{'-'*78}")

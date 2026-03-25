@@ -240,6 +240,13 @@ def _fmt_brl(v: float) -> str:
 
 if __name__ == "__main__":
     import argparse
+    import time as _time
+    from datetime import datetime as _dt
+
+    _t0 = _time.perf_counter()
+    print(f"\n{'-'*52}")
+    print(f"  Inicio : {_dt.now().strftime('%d/%m/%Y %H:%M:%S')}")
+    print(f"{'-'*52}")
 
     parser = argparse.ArgumentParser(description="Gerador de dados – Trabalho 01 FAED")
     parser.add_argument(
@@ -292,3 +299,8 @@ if __name__ == "__main__":
             print(f"  Medicao tracemalloc : {info['pico_mb']:.2f} MB (pico)  |  "
                   f"{info['atual_mb']:.2f} MB (final)")
             print(f"  Tamanho 1 registro  : {info['amostra_1reg_bytes']} B (sys.getsizeof shallow)")
+
+    print(f"\n{'-'*52}")
+    print(f"  Fim    : {_dt.now().strftime('%d/%m/%Y %H:%M:%S')}")
+    print(f"  Duracao: {_time.perf_counter() - _t0:.2f}s")
+    print(f"{'-'*52}")

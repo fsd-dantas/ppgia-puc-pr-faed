@@ -362,7 +362,18 @@ if __name__ == "__main__":
     )
     args = parser.parse_args()
 
+    import time as _time
+    from datetime import datetime as _dt
+
     pasta_res = Path(__file__).parent / "resultados"
     resumo    = args.resumo or _resumo_mais_recente(pasta_res)
 
+    _t0 = _time.perf_counter()
+    print(f"\n{'-'*60}")
+    print(f"  Inicio : {_dt.now().strftime('%d/%m/%Y %H:%M:%S')}")
+    print(f"{'-'*60}")
     main(resumo_path=resumo, saida=args.saida)
+    print(f"\n{'-'*60}")
+    print(f"  Fim    : {_dt.now().strftime('%d/%m/%Y %H:%M:%S')}")
+    print(f"  Duracao: {_time.perf_counter() - _t0:.2f}s")
+    print(f"{'-'*60}")

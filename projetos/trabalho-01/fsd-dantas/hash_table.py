@@ -370,6 +370,7 @@ def executar_experimento(registros: list[dict], m: int, funcao: str,
 # ---------------------------------------------------------------------------
 
 if __name__ == "__main__":
+    from datetime import datetime as _dt
     sys.path.insert(0, str(__import__("pathlib").Path(__file__).parent))
     from data_generator import carregar_csv, gerar_registros
     from pathlib import Path
@@ -380,8 +381,10 @@ if __name__ == "__main__":
     RODADAS    = 5
     PASTA      = Path(__file__).parent / "dados"
 
+    _t0 = time.perf_counter()
     print("=" * 70)
     print("  Tabela Hash — Experimento completo")
+    print(f"  Inicio : {_dt.now().strftime('%d/%m/%Y %H:%M:%S')}")
     print("=" * 70)
 
     for n in VOLUMES:
@@ -410,3 +413,8 @@ if __name__ == "__main__":
                     f"{r['busca']['iteracoes']['media']:<13.2f}"
                     f"{r['insercao']['tempo_s']['media']:.6f}"
                 )
+
+    print(f"\n{'-'*70}")
+    print(f"  Fim    : {_dt.now().strftime('%d/%m/%Y %H:%M:%S')}")
+    print(f"  Duracao: {time.perf_counter() - _t0:.2f}s")
+    print(f"{'-'*70}")

@@ -353,6 +353,7 @@ def executar_experimento(registros: list[dict], rodadas: int = 5) -> dict:
 
 if __name__ == "__main__":
     import sys
+    from datetime import datetime as _dt
     sys.path.insert(0, str(__import__("pathlib").Path(__file__).parent))
     from data_generator import carregar_csv, gerar_registros
 
@@ -362,8 +363,10 @@ if __name__ == "__main__":
     RODADAS  = 5
     PASTA    = Path(__file__).parent / "dados"
 
+    _t0 = time.perf_counter()
     print("=" * 60)
     print("  Array Linear — Experimento completo")
+    print(f"  Inicio : {_dt.now().strftime('%d/%m/%Y %H:%M:%S')}")
     print("=" * 60)
 
     for n in VOLUMES:
@@ -394,3 +397,8 @@ if __name__ == "__main__":
         linha("Busca linear",  "tempo (s)",         r["busca_linear"]["tempo_s"])
         linha("Busca binária", "iterações",         r["busca_binaria"]["iteracoes"])
         linha("Busca binária", "tempo (s)",         r["busca_binaria"]["tempo_s"])
+
+    print(f"\n{'-'*60}")
+    print(f"  Fim    : {_dt.now().strftime('%d/%m/%Y %H:%M:%S')}")
+    print(f"  Duracao: {time.perf_counter() - _t0:.2f}s")
+    print(f"{'-'*60}")

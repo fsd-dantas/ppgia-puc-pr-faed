@@ -463,6 +463,7 @@ def executar_experimento(registros: list[dict],
 # ---------------------------------------------------------------------------
 
 if __name__ == "__main__":
+    from datetime import datetime as _dt
     sys.path.insert(0, str(__import__("pathlib").Path(__file__).parent))
     from data_generator import carregar_csv, gerar_registros
     from pathlib import Path
@@ -471,8 +472,10 @@ if __name__ == "__main__":
     RODADAS = 5
     PASTA   = Path(__file__).parent / "dados"
 
+    _t0 = time.perf_counter()
     print("=" * 65)
     print("  BST vs AVL — Experimento completo")
+    print(f"  Inicio : {_dt.now().strftime('%d/%m/%Y %H:%M:%S')}")
     print("=" * 65)
 
     for n in VOLUMES:
@@ -503,3 +506,8 @@ if __name__ == "__main__":
                   r["busca"]["iteracoes"])
             linha(f"Busca ({classe.__name__})",    "tempo (s)",
                   r["busca"]["tempo_s"])
+
+    print(f"\n{'-'*65}")
+    print(f"  Fim    : {_dt.now().strftime('%d/%m/%Y %H:%M:%S')}")
+    print(f"  Duracao: {time.perf_counter() - _t0:.2f}s")
+    print(f"{'-'*65}")
