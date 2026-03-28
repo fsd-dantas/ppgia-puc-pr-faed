@@ -1,3 +1,19 @@
+# Benchmark de Tabela Hash com encadeamento exterior (chaining).
+#
+# Implementa uma hash table de tamanho fixo M onde colisões são resolvidas por
+# lista encadeada em cada bucket. Testa três funções de hash:
+#   - Divisão:       h(k) = k mod M
+#   - Multiplicação: h(k) = floor(M * frac(k * A)),  A = (sqrt(5)-1)/2  (constante de Knuth)
+#   - Folding:       h(k) = soma de grupos de 2 dígitos da chave, mod M
+#
+# Para cada combinação de (função hash × tamanho M × volume N), mede inserção e busca,
+# contando steps como número de elementos percorridos na cadeia do bucket alvo.
+# Registra também o load factor (N/M) e o número de colisões ocorridas na inserção.
+#
+# Métricas coletadas por rodada: tempo de execução, steps (comparações na cadeia),
+# memória RSS (psutil), pico de memória Python (tracemalloc) e load factor.
+# Cada cenário executa 5 rodadas independentes; resultados salvos com média por volume.
+
 import time
 import psutil
 import tracemalloc
@@ -125,7 +141,12 @@ class HashTable:
 
     def searchMat(self, key):
         index = self.hash_function(key, self.size)
-        return key in self.table[index]
+        steps = 0
+        for record in self.table[index]:
+            steps += 1
+            if record['Mat'] == key:
+                return True, steps
+        return False, steps
 
     def load_factor(self):
         return self.count / self.size
@@ -161,8 +182,8 @@ def read_csv_to_hash(filename, steps, ht): # ******Inserir HT já instanciada
     return ht, steps
 
 def search_hash(ht, key, steps):
-    found = ht.searchMat(key)
-    steps+=1
+    found, chain_steps = ht.searchMat(key)
+    steps += chain_steps
     return found, steps
 
 # Funções para gerar dados de busca a partir dos CSVs --------------------------------------
@@ -259,17 +280,16 @@ def funcTest(data, num_records, func, funcName, dir, type, size):
 
 
 # SAVE DATA FROM TEST TO CSV
-def save_data_to_csv(data, test, sequence):
-        if sequence:
-            filename = f'genResults/{test}_sorted-sequence_results.csv'
-        else:
-            filename = f'genResults/{test}_random-sequence_results.csv'
+def save_data_to_csv(data, test, sequence, num_records):
+        os.makedirs('results', exist_ok=True)
+        suffix = 'sorted-sequence' if sequence else 'random-sequence'
+        filename = f'results/{test}_{suffix}_results.csv'
 
         with open(filename, 'w', newline='') as f:
             writer = csv.writer(f)
             writer.writerow(['Size', 'Time', 'Steps', 'RSS_Memory_MB', 'Peak_Python_Memory_MB', 'Load_Factor'])
             for j in range(len(num_records)):
-                for i in range(len(data.size[0])):
+                for i in range(len(data.size[j])):
                     writer.writerow([
                         data.size[j][i],
                         data.time[j][i],
@@ -280,22 +300,21 @@ def save_data_to_csv(data, test, sequence):
                     ])
 
 if __name__ == "__main__":
-    #num_records = [10_000, 25_000, 50_000, 75_000, 100_000, 250_000, 500_000, 750_000, 1_000_000]
-    num_records = [10_000, 25_000, 50_000, 75_000, 100_000]
+    num_records = [10_000, 50_000, 100_000]
     methods_to_test_name = ["Read-CSV-to-Hash-(Divisao)", "Read-CSV-to-Hash-(Multiplicacao)", "Read-CSV-to-Hash-(Folding)", "Search-Hash-(Divisao)", "Search-Hash-(Multiplicacao)", "Search-Hash-(Folding)"]
     methods_to_test = [read_csv_to_hash, read_csv_to_hash, read_csv_to_hash, search_hash, search_hash, search_hash]
     type_of_test = ["hash-load-div", "hash-load-mul", "hash-load-fld", "hash-search-div", "hash-search-mul", "hash-search-fld"]
-    # Tamanhos para tratamento de colisões
-    sizes = [10,50,100,1000,5000,10000]
-    skip = [0,1,2]
+    # Tamanhos M da tabela hash (conforme enunciado: 100, 1.000, 5.000)
+    sizes = [100, 1_000, 5_000]
+    skip = [0, 1, 2]  # load tests skipped: benchmark foca em busca
 
-    sequence = True
-    dir = "genDataSequence"
+    sequence = False
+    dir = "data"
 
     for i in range(len(methods_to_test_name)):
         if i in skip:
             continue
-        
+
         for size in sizes:
             data = bruteData(num_records)
 
@@ -307,7 +326,7 @@ if __name__ == "__main__":
 
             test_name += f"_size{size}_{type[-3:]}"
 
-            save_data_to_csv(data, test_name, sequence)
+            save_data_to_csv(data, test_name, sequence, num_records)
 
     
 

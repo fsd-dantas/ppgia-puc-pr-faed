@@ -1,3 +1,15 @@
+# Benchmark de Array Linear — busca sequencial e busca binária.
+#
+# Carrega registros de CSV em um array Python (lista de dicts) e mede o desempenho
+# de dois algoritmos de busca por matrícula:
+#   - Busca sequencial: percorre o array elemento a elemento — O(n) no pior caso.
+#   - Busca binária: requer array ordenado; divide o espaço de busca pela metade a cada passo — O(log n).
+#     Para dados não ordenados, aplica Quick Sort antes da busca.
+#
+# Métricas coletadas por rodada: tempo de execução, número de comparações (steps),
+# memória RSS (psutil) e pico de memória Python (tracemalloc).
+# Cada cenário executa 5 rodadas independentes; resultados salvos com média por volume.
+
 import time
 import psutil
 import tracemalloc
@@ -160,17 +172,16 @@ def quick_sort(arr, lo, hi):
 
 
 # SAVE/READ DATA TO/FROM CSV
-def save_data_to_csv(data, test, sequence):
-        if sequence:
-            filename = f'genResults/{test}_sorted-sequence_results.csv'
-        else:
-            filename = f'genResults/{test}_random-sequence_results.csv'
+def save_data_to_csv(data, test, sequence, num_records):
+        os.makedirs('results', exist_ok=True)
+        suffix = 'sorted-sequence' if sequence else 'random-sequence'
+        filename = f'results/{test}_{suffix}_results.csv'
 
         with open(filename, 'w', newline='') as f:
             writer = csv.writer(f)
             writer.writerow(['Size', 'Time', 'Steps', 'RSS_Memory_MB', 'Peak_Python_Memory_MB'])
             for j in range(len(num_records)):
-                for i in range(len(data.size[0])):
+                for i in range(len(data.size[j])):
                     writer.writerow([
                         data.size[j][i],
                         data.time[j][i],
@@ -256,6 +267,7 @@ def funcTest(data, num_records, func, funcName, dir, type):
 
 # GRAFICOS --------------------------
 def graphSizeXStep(data, test, sequence):
+    os.makedirs('results/graphs', exist_ok=True)
     if sequence:
         sequenceTitle = "Sorted Sequence Data"
     else:
@@ -266,7 +278,7 @@ def graphSizeXStep(data, test, sequence):
     plt.ylabel("Number of Steps")
     plt.title(f"{test}: Steps vs Vector Size ({sequenceTitle})")
     plt.tight_layout()
-    plt.savefig(f'genGraph/{test}_SIZE-X-STEP.png', dpi=300, bbox_inches='tight', transparent=False)
+    plt.savefig(f'results/graphs/{test}_SIZE-X-STEP.png', dpi=300, bbox_inches='tight', transparent=False)
     plt.close()
 
 def graphSizeXTime(data, test, sequence):
@@ -280,7 +292,7 @@ def graphSizeXTime(data, test, sequence):
     plt.ylabel("Execution Time (seconds)")
     plt.title(f"{test}: Time vs Vector Size ({sequenceTitle})")
     plt.tight_layout()
-    plt.savefig(f'genGraph/{test}_SIZE-X-TIME.png', dpi=300, bbox_inches='tight', transparent=False)
+    plt.savefig(f'results/graphs/{test}_SIZE-X-TIME.png', dpi=300, bbox_inches='tight', transparent=False)
     plt.close()
 
 def graphSizeXMemory(data, test, sequence):
@@ -294,7 +306,7 @@ def graphSizeXMemory(data, test, sequence):
     plt.ylabel("Memory (MB)")
     plt.title(f"{test}: Physical Memory used vs Vector Size ({sequenceTitle})")
     plt.tight_layout()
-    plt.savefig(f'genGraph/{test}_SIZE-X-MEMORY.png', dpi=300, bbox_inches='tight', transparent=False)
+    plt.savefig(f'results/graphs/{test}_SIZE-X-MEMORY.png', dpi=300, bbox_inches='tight', transparent=False)
     plt.close()
 
 def graphSizeXMemoryPeak(data, test, sequence):
@@ -308,23 +320,19 @@ def graphSizeXMemoryPeak(data, test, sequence):
     plt.ylabel("Peak Python memory (MB)")
     plt.title(f"{test}: Peak Python memory used vs Vector Size ({sequenceTitle})")
     plt.tight_layout()
-    plt.savefig(f'genGraph/{test}_SIZE-X-MEMORY-PEAK.png', dpi=300, bbox_inches='tight', transparent=False)
+    plt.savefig(f'results/graphs/{test}_SIZE-X-MEMORY-PEAK.png', dpi=300, bbox_inches='tight', transparent=False)
     plt.close()
 
 
 if __name__ == "__main__":
-    num_records = [10_000, 25_000, 50_000, 75_000, 100_000, 250_000, 500_000, 750_000, 1_000_000]
-    # num_records = [10_000, 25_000, 50_000, 75_000, 100_000]
+    num_records = [10_000, 50_000, 100_000]
     methods_to_test_name = ["Load-values-from-CSV", "Search-values-in-CSV", "Binary-Search-in-CSV"]
     methods_to_test = [read_csv_to_array, searchFunc, binarySearchFunc]
-    sequence = True
+    sequence = False
     type_of_test = ["load", "search", "binary-search"]
-    skip = [0,1]
+    skip = [0]
 
-    if sequence:
-        dir = "genDataSequence"
-    else:
-        dir = "genData"
+    dir = "data"
 
     for test_idx in range(len(methods_to_test)):
         if test_idx in skip:
@@ -341,7 +349,7 @@ if __name__ == "__main__":
         test_type = type_of_test[test_idx]
         funcTest(data, num_records, test, test_name, dir, test_type)
         
-        save_data_to_csv(data, test_name, sequence)
+        save_data_to_csv(data, test_name, sequence, num_records)
 
         # GRAPHS
         # Plot 1: steps vs vector size

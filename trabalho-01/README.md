@@ -59,7 +59,7 @@ python plotGraph.py
 | Artefato | Descrição |
 |---|---|
 | Código-fonte `.py` | `src/` — sem bibliotecas que implementem as estruturas |
-| Artigo IEEE | `article/artigo.tex` — duas colunas, máx. 6 páginas |
+| Artigo IEEE | Overleaf (ver link abaixo) — duas colunas, máx. 6 páginas |
 | Pacote `.zip` | Entregue na atividade do Canvas |
 
 > **Atenção:** a não entrega do código-fonte **ou** do artigo invalida automaticamente todos os demais critérios da avaliação.

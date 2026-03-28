@@ -1,3 +1,17 @@
+# Benchmark de Árvores de Busca Binária — BST simples e AVL (auto-balanceada).
+#
+# Carrega registros de CSV inserindo cada um como nó na árvore (indexado por matrícula)
+# e mede o desempenho de inserção e busca:
+#   - BST simples: inserção e busca em O(log n) médio, mas degrada para O(n) em dados ordenados.
+#   - AVL: mantém balanceamento por rotações após cada inserção — garante O(log n) no pior caso.
+#
+# A busca utiliza comparação de matrículas descendo a árvore iterativamente,
+# contando um step por nó visitado.
+#
+# Métricas coletadas por rodada: tempo de execução, número de comparações (steps),
+# memória RSS (psutil) e pico de memória Python (tracemalloc).
+# Cada cenário executa 5 rodadas independentes; resultados salvos com média por volume.
+
 import time
 import psutil
 import tracemalloc
@@ -402,17 +416,16 @@ def funcTest(data, num_records, func, funcName, dir, type):
             print(f"    Test {j+1} Finished.")
 
 # SAVE DATA FROM TEST TO CSV
-def save_data_to_csv(data, test, sequence):
-        if sequence:
-            filename = f'genResults/{test}_sorted-sequence_results.csv'
-        else:
-            filename = f'genResults/{test}_random-sequence_results.csv'
+def save_data_to_csv(data, test, sequence, num_records):
+        os.makedirs('results', exist_ok=True)
+        suffix = 'sorted-sequence' if sequence else 'random-sequence'
+        filename = f'results/{test}_{suffix}_results.csv'
 
         with open(filename, 'w', newline='') as f:
             writer = csv.writer(f)
             writer.writerow(['Size', 'Time', 'Steps', 'RSS_Memory_MB', 'Peak_Python_Memory_MB'])
             for j in range(len(num_records)):
-                for i in range(len(data.size[0])):
+                for i in range(len(data.size[j])):
                     writer.writerow([
                         data.size[j][i],
                         data.time[j][i],
@@ -422,14 +435,14 @@ def save_data_to_csv(data, test, sequence):
                     ])
 
 if __name__ == "__main__":
-    num_records = [10_000, 25_000, 50_000, 75_000, 100_000, 250_000, 500_000, 750_000, 1_000_000]
+    num_records = [10_000, 50_000, 100_000]
     methods_to_test_name = ["Read-CSV-to-BST", "Read-CSV-to-AVL", "Search-BST", "Search-AVL"]
     methods_to_test = [read_csv_to_bst, read_csv_to_avl, search_bst, search_avl]
     type_of_test = ["load", "load", "bst-search", "avl-search"]
-    skip = [0,1]
-    
-    sequence = True
-    dir = "genDataSequence"
+    skip = [0, 1]  # load tests skipped: benchmark foca em busca
+
+    sequence = False
+    dir = "data"
 
     for test_idx in range(len(methods_to_test)):
         if test_idx in skip:
@@ -441,7 +454,7 @@ if __name__ == "__main__":
         test_name = methods_to_test_name[test_idx]
         test_type = type_of_test[test_idx]
         funcTest(data, num_records, test, test_name, dir, test_type)
-        
-        save_data_to_csv(data, test_name, sequence)
+
+        save_data_to_csv(data, test_name, sequence, num_records)
 
 
