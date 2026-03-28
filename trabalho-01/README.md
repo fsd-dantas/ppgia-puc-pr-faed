@@ -1,10 +1,5 @@
 # Trabalho 01 — Análise Comparativa de Estruturas de Dados
 
-**Disciplina:** Fundamentos de Algoritmos e Estrutura de Dados
-**Programa:** PPGIA — Pós-Graduação em Informática Aplicada, PUCPR
-**Professor:** André Gustavo Hochuli
-
----
 
 ## Objetivo
 
