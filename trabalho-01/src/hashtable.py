@@ -6,12 +6,12 @@
 #   - Multiplicação: h(k) = floor(M * frac(k * A)),  A = (sqrt(5)-1)/2  (constante de Knuth)
 #   - Folding:       h(k) = soma de grupos de 2 dígitos da chave, mod M
 #
-# Para cada combinação de (função hash × tamanho M × volume N), mede inserção e busca,
+# Para cada combinação de (função hash × tamanho M × volume N), mede a busca
 # contando steps como número de elementos percorridos na cadeia do bucket alvo.
 # Registra também o load factor (N/M) e o número de colisões ocorridas na inserção.
 #
 # Métricas coletadas por rodada: tempo de execução, steps (comparações na cadeia),
-# memória RSS (psutil), pico de memória Python (tracemalloc) e load factor.
+# memória RSS (psutil), pico de memória Python (tracemalloc), load factor e colisões.
 # Cada cenário executa 5 rodadas independentes; resultados salvos com média por volume.
 
 import time
@@ -20,127 +20,54 @@ import tracemalloc
 import csv
 import os
 
-# Classe para armazenar os dados dos testes ----------------------------------
-class bruteData():
-    def __init__(self, num_records):
-        self.time = []
-        self.step = []
-        self.size = []
-        self.rss_memory = []
-        self.peak_python_memory = []
-        self.load_factor = []
-        for _ in range(len(num_records)):
-            self.time.append([])
-            self.step.append([])
-            self.size.append([])
-            self.rss_memory.append([])
-            self.peak_python_memory.append([])
-            self.load_factor.append([])
 
-    def sizeMean(self, idx_of_num_records):
-        temp = 0
-        for x in self.size[idx_of_num_records]:
-            temp+=x
-        return (temp/len(self.size[idx_of_num_records]))
+# =========================
+# Data Container
+# =========================
+class BenchmarkData:
+    def __init__(self, sizes):
+        self.sizes = sizes
+        self.time = {n: [] for n in sizes}
+        self.steps = {n: [] for n in sizes}
+        self.rss = {n: [] for n in sizes}
+        self.peak = {n: [] for n in sizes}
+        self.load_factor = {n: [] for n in sizes}
+        self.collisions = {n: [] for n in sizes}
 
-    def timeMean(self, idx_of_num_records):
-        temp = 0
-        for x in self.time[idx_of_num_records]:
-            temp+=x
-        return (temp/len(self.time[idx_of_num_records]))
-    
-    def stepMean(self, idx_of_num_records):
-        temp = 0
-        for x in self.step[idx_of_num_records]:
-            temp+=x
-        return (temp/len(self.step[idx_of_num_records]))
-    
-    def rssMemoryMean(self, idx_of_num_records):
-        temp = 0
-        for x in self.rss_memory[idx_of_num_records]:
-            temp+=x
-        return (temp/len(self.rss_memory[idx_of_num_records]))
-    
-    def peakPythonMemoryMean(self, idx_of_num_records):
-        temp = 0
-        for x in self.peak_python_memory[idx_of_num_records]:
-            temp+=x
-        return (temp/len(self.peak_python_memory[idx_of_num_records]))
+    def record(self, n, t, steps, rss, peak, load_factor, collisions):
+        self.time[n].append(t)
+        self.steps[n].append(steps)
+        self.rss[n].append(rss)
+        self.peak[n].append(peak)
+        self.load_factor[n].append(load_factor)
+        self.collisions[n].append(collisions)
 
-    def sizesToPlot(self):
-        temp = []
-        for i in range(len(data.size)):
-            temp.append(self.sizeMean(i))
-        return temp
-
-    def timesToPlot(self):
-        temp = []
-        for i in range(len(data.time)):
-            temp.append(self.timeMean(i))
-        return temp
-    
-    def stepsToPlot(self):
-        temp = []
-        for i in range(len(data.step)):
-            temp.append(self.stepMean(i))
-        return temp
-    
-    def rssMemoryToPlot(self):
-        temp = []
-        for i in range(len(data.rss_memory)):
-            temp.append(self.rssMemoryMean(i))
-        return temp
-    
-    def peakPythonMemoryToPlot(self):
-        temp = []
-        for i in range(len(data.peak_python_memory)):
-            temp.append(self.peakPythonMemoryMean(i))
-        return temp
-        
-    def __str__(self):
-        temp = "\nData Aquired\n"
-        temp+= "Time:\n"
-        for i in range(len(self.time)):
-            temp+=f"     {i}:"
-            temp+=str(self.time[i])
-            temp+="\n"
-        temp+= "Steps:\n"
-        for i in range(len(self.step)):
-            temp+=f"     {i}:"
-            temp+=str(self.step[i])
-            temp+="\n"
-        temp+= "Size:\n"
-        for i in range(len(self.size)):
-            temp+=f"     {i}:"
-            temp+=str(self.size[i])
-            temp+="\n"
-
-        return temp
+    def mean(self, metric, n):
+        values = getattr(self, metric)[n]
+        return sum(values) / len(values)
 
 
-# Classe para a Hash Table e funções de hash ----------------------------------
+# =========================
+# Hash Table
+# =========================
 class HashTable:
-    def __init__(self, size, hash_function):
+    def __init__(self, size, hash_fn):
         self.size = size
         self.table = [[] for _ in range(size)]
-        self.hash_function = hash_function
-        self.count = 0  # número de elementos inseridos
+        self.hash_fn = hash_fn
+        self.count = 0
         self.collisions = 0
 
-    def insert(self, key):
-        index = self.hash_function(key['Mat'], self.size)
-
-        # Verifica colisão
+    def insert(self, record):
+        index = self.hash_fn(record['Mat'], self.size)
         if len(self.table[index]) > 0:
             self.collisions += 1
-
-        # Evita duplicatas
-        if key not in self.table[index]:
-            self.table[index].append(key)
+        if record not in self.table[index]:
+            self.table[index].append(record)
             self.count += 1
 
-    def searchMat(self, key):
-        index = self.hash_function(key, self.size)
+    def search(self, key):
+        index = self.hash_fn(key, self.size)
         steps = 0
         for record in self.table[index]:
             steps += 1
@@ -148,186 +75,138 @@ class HashTable:
                 return True, steps
         return False, steps
 
-    def load_factor(self):
+    def get_load_factor(self):
         return self.count / self.size
-    
 
-# 1 - Divisão simples
+
+# =========================
+# Hash Functions
+# =========================
 def hash_division(key, size):
     return key % size
 
-# 2 - Multiplicação (Knuth)
 def hash_multiplication(key, size):
-    A = 0.6180339887  # constante de ouro
+    A = 0.6180339887  # constante de Knuth
     return int(size * ((key * A) % 1))
 
-# 3 - Método folding (grandes inteiros)
 def hash_folding(key, size):
     key_str = str(key)
     parts = [int(key_str[i:i+2]) for i in range(0, len(key_str), 2)]
     return sum(parts) % size
 
-# Funções a serem Testadas ----------------------------------------------------
-def read_csv_to_hash(filename, steps, ht): # ******Inserir HT já instanciada
-    header = []
-    with open(filename, 'r') as file:
-        reader = csv.reader(file)
+
+# =========================
+# CSV Loaders
+# =========================
+def load_hash_table(filename, hash_fn, size):
+    ht = HashTable(size, hash_fn)
+    with open(filename, 'r') as f:
+        reader = csv.DictReader(f)
         for row in reader:
-            if row[0] == "Mat":
-                for x in row:
-                    header.append(x)
-                continue
-            ht.insert({header[0]: int(row[0]), header[1]: row[1], header[2]: float(row[2]), header[3]: int(row[3])})
-            steps+=1
-    return ht, steps
+            ht.insert({
+                "Mat": int(row["Mat"]),
+                "Name": row["Name"],
+                "Sal": float(row["Sal"]),
+                "CodSec": int(row["CodSec"])
+            })
+    return ht
 
-def search_hash(ht, key, steps):
-    found, chain_steps = ht.searchMat(key)
-    steps += chain_steps
-    return found, steps
 
-# Funções para gerar dados de busca a partir dos CSVs --------------------------------------
-def read_csv_to_array(filename):
-    arr = []
-    header = []
-    with open(filename, 'r') as file:
-        reader = csv.reader(file)
+def load_targets(filename):
+    """Loads only Mat values to pick search targets (lightweight pass)."""
+    mats = []
+    with open(filename, 'r') as f:
+        reader = csv.DictReader(f)
         for row in reader:
-            if row[0] == "Mat":
-                for x in row:
-                    header.append(x)
-                continue
-            arr.append({header[0]: int(row[0]), header[1]: row[1], header[2]: float(row[2]), header[3]: int(row[3])})
-    return arr
-
-def getSearchArray(number_of_tests, total_records, dir):
-    searchArr = []
-    idx0 = 1/number_of_tests
-    for j in range(number_of_tests):
-        arr = read_csv_to_array(f'{dir}/data_{total_records}_{j+1}.csv')
-        searchArr.append(arr[round(total_records * (idx0 * (j+1)))-1]['Mat'])
-    return searchArr
-    
-def instantiateHashTable(size, hash_type):
-    if "div" in hash_type.lower():
-        return HashTable(size, hash_division)
-    elif "mul" in hash_type.lower():
-        return HashTable(size, hash_multiplication)
-    elif "fld" in hash_type.lower():
-        return HashTable(size, hash_folding)
-    else:
-        raise ValueError("Invalid hash type. Use 'div', 'mul', or 'fld'.")
-
-# Função para realizar os testes e coletar os dados
-def funcTest(data, num_records, func, funcName, dir, type, size):
-    number_of_tests = 5
-    
-    print(f"Starting Test {funcName} with size {size}...")
-    # FOR EVERY NUM_RECORDS
-    for i in range(len(num_records)):
-        # TEST  DIFERENT DATASETS {number_of_tests} TIMES TO GET A MEAN
-        print(f"Starting Test with {num_records[i]} samples...")
-        
-        # Gerar um array de valores para busca, com base nos valores dos CSVs
-        if "search" in type.lower():
-            searchArr = getSearchArray(number_of_tests,num_records[i], dir)
-
-        for j in range(number_of_tests):
-            print(f"    Starting Test {j+1}...")
-
-            # Deixa dados carregados para busca em diferentes tipos de teste de busca em HTs
-            if "search" in type.lower():
-                ht = instantiateHashTable(size, type)
-                ht,_ = read_csv_to_hash(f'{dir}/data_{num_records[i]}_{j+1}.csv', 0, ht)
-                
-            # MEASURES START -------------------------------
-            tempSteps = 0
-            process = psutil.Process(os.getpid())
-
-            tracemalloc.start()
-
-            rss_before = process.memory_info().rss
-            t0 = time.perf_counter()
-            # MEASURES START -------------------------------
-            
-            # Executa a função de teste de acordo com o tipo
-            if "load" in type.lower():
-                ht = instantiateHashTable(size, type)
-                ht, tempSteps = func(f'{dir}/data_{num_records[i]}_{j+1}.csv', tempSteps, ht)
-            elif "search" in type.lower():
-                response, tempSteps = func(ht, searchArr[j], tempSteps)
-            else:
-                ht = None
-                tempSteps = -1
-
-            # MEASURES END ---------------------------------
-            t1 = time.perf_counter()
-            
-            current, peak = tracemalloc.get_traced_memory()
-            tracemalloc.stop()
-
-            rss_after = process.memory_info().rss
-            # MEASURES END ---------------------------------
-
-            data.time[i].append(t1 - t0)
-            data.step[i].append(tempSteps)
-            data.size[i].append(num_records[i])
-            data.rss_memory[i].append((rss_after - rss_before)/ 1024 / 1024) # Convertendo para MB
-            data.peak_python_memory[i].append(peak/ 1024 / 1024) # Convertendo para MB
-            data.load_factor[i].append(ht.load_factor() if ht else None)
-
-            print(f"    Test {j+1} Finished.")
+            mats.append(int(row["Mat"]))
+    return mats
 
 
-# SAVE DATA FROM TEST TO CSV
-def save_data_to_csv(data, test, sequence, num_records):
-        os.makedirs('results', exist_ok=True)
-        suffix = 'sorted-sequence' if sequence else 'random-sequence'
-        filename = f'results/{test}_{suffix}_results.csv'
+# =========================
+# Benchmark Engine
+# =========================
+def run_benchmark(sizes, base_dir, hash_fn, table_size):
+    runs = 5
+    data = BenchmarkData(sizes)
 
-        with open(filename, 'w', newline='') as f:
-            writer = csv.writer(f)
-            writer.writerow(['Size', 'Time', 'Steps', 'RSS_Memory_MB', 'Peak_Python_Memory_MB', 'Load_Factor'])
-            for j in range(len(num_records)):
-                for i in range(len(data.size[j])):
-                    writer.writerow([
-                        data.size[j][i],
-                        data.time[j][i],
-                        data.step[j][i],
-                        data.rss_memory[j][i],
-                        data.peak_python_memory[j][i],
-                        data.load_factor[j][i]
-                    ])
+    for n in sizes:
+        for k in range(1, runs + 1):
+            file = f"{base_dir}/data_{n}_{k}.csv"
 
+            # --- Preparation (NOT measured) ---
+            mats = load_targets(file)
+            targets = [
+                mats[int(len(mats) * 0.2)],
+                mats[int(len(mats) * 0.4)],
+                mats[int(len(mats) * 0.6)],
+                mats[int(len(mats) * 0.8)],
+                mats[-1]
+            ]
+            ht = load_hash_table(file, hash_fn, table_size)
+
+            for target in targets:
+                process = psutil.Process(os.getpid())
+                tracemalloc.start()
+                rss_before = process.memory_info().rss
+                t0 = time.perf_counter()
+
+                _, steps = ht.search(target)
+
+                t1 = time.perf_counter()
+                current, peak = tracemalloc.get_traced_memory()
+                tracemalloc.stop()
+                rss_after = process.memory_info().rss
+
+                data.record(
+                    n,
+                    t1 - t0,
+                    steps,
+                    (rss_after - rss_before) / 1024 / 1024,
+                    peak / 1024 / 1024,
+                    ht.get_load_factor(),
+                    ht.collisions
+                )
+
+    return data
+
+
+# =========================
+# Save Results
+# =========================
+def save_results(data, filename):
+    os.makedirs("results", exist_ok=True)
+    with open(f"results/{filename}", 'w', newline='') as f:
+        writer = csv.writer(f)
+        writer.writerow(["Size", "Time", "Steps", "RSS_Memory_MB", "Peak_Python_Memory_MB", "Load_Factor", "Collisions"])
+        for n in data.sizes:
+            for i in range(len(data.time[n])):
+                writer.writerow([
+                    n,
+                    data.time[n][i],
+                    data.steps[n][i],
+                    data.rss[n][i],
+                    data.peak[n][i],
+                    data.load_factor[n][i],
+                    data.collisions[n][i]
+                ])
+
+
+# =========================
+# Main
+# =========================
 if __name__ == "__main__":
-    num_records = [10_000, 50_000, 100_000]
-    methods_to_test_name = ["Read-CSV-to-Hash-(Divisao)", "Read-CSV-to-Hash-(Multiplicacao)", "Read-CSV-to-Hash-(Folding)", "Search-Hash-(Divisao)", "Search-Hash-(Multiplicacao)", "Search-Hash-(Folding)"]
-    methods_to_test = [read_csv_to_hash, read_csv_to_hash, read_csv_to_hash, search_hash, search_hash, search_hash]
-    type_of_test = ["hash-load-div", "hash-load-mul", "hash-load-fld", "hash-search-div", "hash-search-mul", "hash-search-fld"]
+    sizes = [10_000, 50_000, 100_000]
+    base_dir = "data"
     # Tamanhos M da tabela hash (conforme enunciado: 100, 1.000, 5.000)
-    sizes = [100, 1_000, 5_000]
-    skip = [0, 1, 2]  # load tests skipped: benchmark foca em busca
+    table_sizes = [100, 1_000, 5_000]
 
-    sequence = False
-    dir = "data"
+    hash_functions = {
+        "Divisao": hash_division,
+        "Multiplicacao": hash_multiplication,
+        "Folding": hash_folding,
+    }
 
-    for i in range(len(methods_to_test_name)):
-        if i in skip:
-            continue
-
-        for size in sizes:
-            data = bruteData(num_records)
-
-            test_name = methods_to_test_name[i]
-            func = methods_to_test[i]
-            type = type_of_test[i]
-
-            funcTest(data, num_records, func, test_name, dir, type, size)
-
-            test_name += f"_size{size}_{type[-3:]}"
-
-            save_data_to_csv(data, test_name, sequence, num_records)
-
-    
-
-
+    for fn_name, fn in hash_functions.items():
+        for m in table_sizes:
+            data = run_benchmark(sizes, base_dir, fn, m)
+            save_results(data, f"Search-Hash-({fn_name})_size{m}_random-sequence_results.csv")

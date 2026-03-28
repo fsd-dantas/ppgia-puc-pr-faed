@@ -64,7 +64,7 @@ python hashtable.py
 Testa três funções de hash (Divisão, Multiplicação, Folding) com três tamanhos de tabela M ∈ {100, 1.000, 5.000}.
 Colisões são resolvidas por encadeamento exterior. Os steps medem o número de elementos percorridos na cadeia do bucket.
 
-**Saída:** `results/Search-Hash-({função})_size{M}_{sufixo}_results.csv` — 9 arquivos no total.
+**Saída:** 9 arquivos no formato `results/Search-Hash-({Divisao|Multiplicacao|Folding})_size{100|1000|5000}_random-sequence_results.csv`
 
 ---
 
@@ -80,7 +80,7 @@ Todos os arquivos de resultado seguem o mesmo formato:
 | `RSS_Memory_MB` | Memória física incrementada (psutil), em MB |
 | `Peak_Python_Memory_MB` | Pico de memória Python alocada (tracemalloc), em MB |
 
-A tabela hash inclui também a coluna `Load_Factor` (N/M).
+A tabela hash inclui também as colunas `Load_Factor` (N/M) e `Collisions` (colisões na inserção).
 
 Cada linha é uma rodada individual. Os resultados reportados no artigo são médias das 5 rodadas por volume.
 
