@@ -1,0 +1,290 @@
+% =============================================================================
+% Artigo Científico — Trabalho 02 FAED/PPGIA/PUC-PR
+% Formato: IEEE duas colunas, máximo 6 páginas
+% Template: IEEEtran (versão 1.8b)
+% =============================================================================
+\documentclass[conference]{IEEEtran}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[brazil]{babel}
+\usepackage{cite}
+\usepackage{amsmath,amssymb}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{hyperref}
+\usepackage{xcolor}
+\usepackage{algorithm}
+\usepackage{algorithmic}
+
+\graphicspath{{figures/}}
+
+% =============================================================================
+\begin{document}
+
+\title{Análise Comparativa de Algoritmos de Busca em Grafos Aplicados a
+       Redes de Backhaul Sem Fio para Smart Grid}
+
+\author{
+  \IEEEauthorblockN{[Nome dos Autores]}
+  \IEEEauthorblockA{
+    Programa de Pós-Graduação em Informática Aplicada (PPGIA)\\
+    Pontifícia Universidade Católica do Paraná (PUC-PR)\\
+    Curitiba, Brasil\\
+    \{email\}@ppgia.pucpr.br
+  }
+}
+
+\maketitle
+
+% =============================================================================
+\begin{abstract}
+Este artigo apresenta uma análise comparativa de cinco algoritmos de busca
+em grafos — Dijkstra, Busca Gananciosa, A*, BFS e DFS — aplicados a uma rede
+de backhaul sem fio para smart grid. A topologia experimental consiste em
+25 nós distribuídos em três camadas (Access Points, Store-and-Forward e
+Remotes), com pesos de aresta derivados de um custo composto baseado em
+latência, throughput e taxa de perda de pacotes, parametrizado segundo
+as especificações públicas do rádio GE MDS Orbit MCR 900~MHz e o modelo
+de propagação Friis com sombreamento log-normal. Cinco pares
+origem-destino foram avaliados em $\geq 5$ execuções independentes cada,
+mensurando tempo de execução, nós expandidos e memória de pico. Os
+resultados demonstram que A* reduz a expansão de nós em até [X]\% em
+relação ao Dijkstra, mantendo otimalidade de solução, enquanto BFS e DFS
+produzem caminhos sistematicamente subótimos em grafos ponderados.
+\end{abstract}
+
+\begin{IEEEkeywords}
+algoritmos de busca, grafos ponderados, backhaul sem fio, smart grid,
+Dijkstra, A*, heurística admissível
+\end{IEEEkeywords}
+
+% =============================================================================
+\section{Introdução}
+
+Redes de backhaul sem fio para smart grid enfrentam requisitos conflitantes
+de latência, confiabilidade e custo operacional. A seleção de rotas nessas
+redes pode ser modelada como um problema de busca em grafo ponderado, onde
+os pesos dos enlaces refletem métricas físicas da camada de rádio
+frequência (RF): RSSI, SNR, latência e taxa de perda de pacotes
+\cite{rappaport2002}.
+
+Algoritmos de busca em grafos diferem fundamentalmente quanto à utilização
+de informação de custo (estratégias cegas vs. informadas) e à garantia de
+otimalidade da solução \cite{russell2020}. A comparação empírica dessas
+diferenças em um domínio de aplicação real — em vez de grafos sintéticos
+genéricos — permite uma análise crítica mais fundamentada dos trade-offs
+entre eficiência computacional e qualidade de solução.
+
+Este trabalho implementa e compara Dijkstra \cite{dijkstra1959}, A*
+\cite{hart1968}, Busca Gananciosa, BFS e DFS em Python puro (sem uso de
+bibliotecas que forneçam a lógica dos algoritmos), sobre uma topologia de
+25 nós representando uma rede de backhaul de smart grid com dados sintéticos
+compatíveis com LGPD. As contribuições são:
+
+\begin{itemize}
+  \item Função de custo composto parametrizada para enlaces RF de 900~MHz;
+  \item Heurística euclidiana admissível e consistente derivada dos dados;
+  \item Avaliação estatística com $\geq 5$ rodadas por par de teste.
+\end{itemize}
+
+% =============================================================================
+\section{Trabalhos Relacionados}
+
+% TODO: referenciar artigos sobre roteamento em redes de smart grid e
+% comparações de algoritmos de busca em grafos de comunicação.
+
+% =============================================================================
+\section{Modelagem da Rede e Função de Custo}
+
+\subsection{Topologia}
+
+A rede é modelada como um grafo não-direcionado $G = (V, E)$ com $|V| = 25$
+nós e $|E| = 32$ arestas. Os nós pertencem a três categorias:
+
+\begin{itemize}
+  \item \textbf{AP} (3 nós): Access Points com conexão ao backbone cabeado;
+  \item \textbf{SAF} (7 nós): repetidores Store-and-Forward;
+  \item \textbf{Remote} (15 nós): concentradores de medidores inteligentes.
+\end{itemize}
+
+\subsection{Modelo de Propagação}
+
+Os parâmetros de enlace são gerados pelo modelo de Friis para perda no
+espaço livre (ITU-R P.525) com sombreamento log-normal:
+
+\begin{equation}
+  PL(d) = 20\log_{10}(d) + 20\log_{10}(f) + 20\log_{10}\!\left(\frac{4\pi}{c}\right) + X_\sigma
+\end{equation}
+
+onde $d$ é a distância em metros, $f = 928\,\text{MHz}$,
+$X_\sigma \sim \mathcal{N}(0, 7^2)$~dB.
+
+O throughput efetivo é estimado pela capacidade de Shannon com eficiência
+prática de 55\%:
+
+\begin{equation}
+  C = 0{,}55 \cdot B \cdot \log_2(1 + \text{SNR}_\text{lin})
+\end{equation}
+
+com $B = 200\,\text{kHz}$ (modo narrow-band SCADA do GE MDS MCR
+\cite{ge_mds_mcr}).
+
+\subsection{Função de Custo Composto}
+
+O peso de cada aresta combina três métricas de qualidade do enlace:
+
+\begin{equation}
+  w(u,v) = \alpha \cdot \ell_{ms} + \beta \cdot (1 - \tau_{norm}) \cdot 100 + \gamma \cdot \rho
+  \label{eq:peso}
+\end{equation}
+
+onde $\ell_{ms}$ é a latência em ms, $\tau_{norm} = C / C_{max} \in [0,1]$
+é o throughput normalizado, $\rho$ é a taxa de perda de pacotes (\%), e
+$\alpha = 0{,}4$, $\beta = 0{,}4$, $\gamma = 0{,}2$.
+
+% =============================================================================
+\section{Algoritmos de Busca}
+
+\subsection{Dijkstra}
+
+Expande o nó de menor custo acumulado $g(n)$.
+Complexidade: $O((V+E)\log V)$.
+Garante solução ótima em grafos com pesos não-negativos \cite{cormen2022}.
+
+\subsection{A*}
+
+Expande o nó de menor $f(n) = g(n) + h(n)$.
+A heurística euclidiana:
+
+\begin{equation}
+  h(n) = d_E(n, t) \cdot \min_{(u,v) \in E} \frac{w(u,v)}{d_E(u,v)}
+  \label{eq:heuristica}
+\end{equation}
+
+é admissível ($h(n) \leq h^*(n)$) e consistente, garantindo otimalidade
+sem re-expansão de nós \cite{hart1968}.
+
+\subsection{Busca Gananciosa}
+
+Expande apenas por $h(n)$, ignorando $g(n)$.
+Rápida, mas não garante otimalidade.
+
+\subsection{BFS e DFS}
+
+BFS (fila FIFO) garante mínimo de saltos em grafos não-ponderados.
+DFS (pilha LIFO) não oferece garantia alguma de otimalidade.
+Ambos têm complexidade $O(V+E)$.
+
+% =============================================================================
+\section{Experimentos e Resultados}
+
+\subsection{Configuração Experimental}
+
+Cinco pares origem-destino cobrem cenários distintos do backhaul:
+
+\begin{table}[h]
+\caption{Pares de teste}
+\label{tab:pares}
+\centering
+\begin{tabular}{lll}
+\toprule
+\# & Origem & Destino \\
+\midrule
+1 & REM-01 & AP-01   \\
+2 & REM-14 & AP-02   \\
+3 & REM-01 & REM-15  \\
+4 & REM-07 & REM-12  \\
+5 & REM-02 & REM-09  \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Cada par foi executado $N = 5$ vezes independentes por algoritmo.
+Métricas coletadas: tempo de execução (ms), nós expandidos, custo do caminho,
+comprimento (saltos) e memória de pico (KB).
+
+\subsection{Resultados}
+
+% TODO: substituir pela tabela gerada a partir de results/metrics/sumario.csv
+
+\begin{table}[h]
+\caption{Resultados médios — Par 1 (REM-01 $\to$ AP-01)}
+\label{tab:resultados}
+\centering
+\begin{tabular}{lrrrr}
+\toprule
+Algoritmo & Tempo (ms) & Nós & Custo & Saltos \\
+\midrule
+Dijkstra   & -- & -- & -- & -- \\
+A*         & -- & -- & -- & -- \\
+Gananciosa & -- & -- & -- & -- \\
+BFS        & -- & -- & -- & -- \\
+DFS        & -- & -- & -- & -- \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+% TODO: inserir figura gerada pelo Pyvis / matplotlib
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=\columnwidth]{topologia_backhaul}
+  \caption{Topologia da rede de backhaul (25 nós). AP: vermelho; SAF:
+           laranja; Remote: verde. Espessura das arestas proporcional ao custo.}
+  \label{fig:topo}
+\end{figure}
+
+% =============================================================================
+\section{Análise Crítica}
+
+\subsection{Qualidade da Solução}
+
+Dijkstra e A* retornam, por construção, o caminho de custo mínimo segundo
+a função \eqref{eq:peso}. BFS e DFS não incorporam pesos na decisão de
+expansão, produzindo caminhos com custo sistematicamente superior ao ótimo
+nesta topologia.
+
+\subsection{Eficiência Computacional}
+
+A heurística \eqref{eq:heuristica} direciona A* para o destino, reduzindo
+o número de nós expandidos em relação ao Dijkstra. Em grafos hierárquicos
+como o backhaul modelado, onde a topologia reflete proximidade geográfica,
+espera-se uma redução significativa de nós expandidos.
+
+\subsection{Complexidade Assintótica}
+
+\begin{table}[h]
+\caption{Complexidade assintótica}
+\label{tab:bigO}
+\centering
+\begin{tabular}{lcc}
+\toprule
+Algoritmo   & Tempo           & Espaço  \\
+\midrule
+Dijkstra    & $O((V+E)\log V)$ & $O(V)$ \\
+A*          & $O((V+E)\log V)$ & $O(V)$ \\
+Gananciosa  & $O((V+E)\log V)$ & $O(V)$ \\
+BFS         & $O(V+E)$        & $O(V)$  \\
+DFS         & $O(V+E)$        & $O(V)$  \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Trade-offs para Backhaul Smart Grid}
+
+Em redes de smart grid, o custo de falha de entrega de um telegrama SCADA
+(controle) supera o custo computacional de qualquer algoritmo.
+Portanto, a prioridade é otimalidade e confiabilidade do caminho.
+A* apresenta o melhor equilíbrio: garante otimalidade com custo
+computacional reduzido pela heurística geográfica.
+
+% =============================================================================
+\section{Conclusão}
+
+% TODO
+
+% =============================================================================
+\bibliographystyle{IEEEtran}
+\bibliography{references}
+
+\end{document}

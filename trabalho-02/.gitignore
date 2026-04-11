@@ -1,0 +1,24 @@
+# Ambiente virtual
+.venv/
+
+# Banco de dados gerado — NÃO ignorar (commitado intencionalmente)
+# db/backhaul_sim.db
+
+# Saídas geradas
+results/graphs/*.html
+results/metrics/*.csv
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+.pytest_cache/
+
+# Relatório compilado
+report/*.pdf
+report/*.aux
+report/*.log
+report/*.out
+report/*.bbl
+report/*.blg
+report/*.synctex.gz

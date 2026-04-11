@@ -1,0 +1,8 @@
+# Normaliza line endings: LF no repo, conversão automática no checkout
+* text=auto
+
+# Binários — sem conversão
+*.db binary
+*.pdf binary
+*.png binary
+*.jpg binary

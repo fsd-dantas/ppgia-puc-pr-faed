@@ -1,0 +1,9 @@
+[tools]
+python = "3.13"
+
+[env]
+# Cria e ativa o virtualenv em .venv automaticamente ao entrar no diretório
+_.python.venv = { path = ".venv", create = true }
+
+# Garante que scripts do projeto sejam encontrados pelo runner
+PYTHONPATH = "."
