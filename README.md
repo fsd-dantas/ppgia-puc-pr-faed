@@ -10,6 +10,7 @@ Prof. André Gustavo Hochuli · 2026
 | # | Título | Diretório |
 |---|---|---|
 | 01 | [Análise Comparativa de Estruturas de Dados](trabalho-01/) | `trabalho-01/` |
+| 02 | [Análise de Algoritmos de Busca em Grafos](trabalho-02/) | `trabalho-02/` |
 
 ---
 
