@@ -84,9 +84,9 @@ def executar() -> None:
     for src, dst, descricao in PARES_TESTE:
         nome_src = grafo.nos[src]['nome']
         nome_dst = grafo.nos[dst]['nome']
-        print(f"\n{'═' * 65}")
-        print(f"  Par: {nome_src} → {nome_dst}  [{descricao}]")
-        print(f"{'─' * 65}")
+        print(f"\n{'=' * 65}")
+        print(f"  Par: {nome_src} -> {nome_dst}  [{descricao}]")
+        print(f"{'-' * 65}")
 
         for nome_alg, func_alg in ALGORITMOS.items():
             rodadas: List[Dict] = []
@@ -141,7 +141,7 @@ def executar() -> None:
         os.path.join(DIR_METRICAS, 'sumario.csv'),
     )
 
-    print(f"\n{'═' * 65}")
+    print(f"\n{'=' * 65}")
     print(f"  Resultados exportados em {DIR_METRICAS}/")
     print(f"  Grafos Pyvis em {DIR_GRAFOS}/")
 
