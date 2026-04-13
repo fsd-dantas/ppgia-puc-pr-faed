@@ -172,7 +172,7 @@ Explora profundamente um ramo antes de retroceder, usando uma pilha LIFO. Não o
 
 ### 5.1 Configuração Experimental
 
-Os experimentos foram executados em [ESPECIFICAR HARDWARE/OS]. Cada algoritmo foi executado N = 5 vezes independentes por par origem-destino. As métricas coletadas são:
+Os experimentos foram executados em um laptop com processador Intel Core Ultra 5 125U (Clock Speed Max. 4,30 GHz), com 16GB de Memória RAM DDR5-5600 (2800MHz). Cada algoritmo foi executado N = 10.000 vezes independentes por par origem-destino. As métricas coletadas são:
 
 - **Tempo de execução (ms):** medido com `time.perf_counter()` de alta resolução
 - **Nós expandidos:** contagem explícita dentro do algoritmo
@@ -192,57 +192,55 @@ Os cinco pares de teste foram selecionados para cobrir cenários distintos da re
 
 ### 5.2 Resultados por Par
 
-<!-- TODO: substituir pelos valores gerados em results/metrics/sumario.csv após rodar python -m src.runner -->
-
 **Par 1 — REM-01 → AP-01**
 
 | Algoritmo   | Tempo (ms) ± dp | Nós exp. | Custo   | Saltos |
 |-------------|-----------------|----------|---------|--------|
-| Dijkstra    | — ± —           | —        | —       | —      |
-| A*          | — ± —           | —        | —       | —      |
-| Gananciosa  | — ± —           | —        | —       | —      |
-| BFS         | — ± —           | —        | —       | —      |
-| DFS         | — ± —           | —        | —       | —      |
+| Dijkstra    | 0.033±0.027     | 4        | 116,103 | 2      |
+| A*          | 0.025±0.016     | 3        | 116,103 | 2      |
+| Gananciosa  | 0.044±0.211     | 3        | 116,103 | 2      |
+| BFS         | 0.014±0.015     | 3        | 116,103 | 2      |
+| DFS         | 0.017±0.014     | 3        | 116,103 | 2      |
 
 **Par 2 — REM-14 → AP-02**
 
 | Algoritmo   | Tempo (ms) ± dp | Nós exp. | Custo   | Saltos |
 |-------------|-----------------|----------|---------|--------|
-| Dijkstra    | — ± —           | —        | —       | —      |
-| A*          | — ± —           | —        | —       | —      |
-| Gananciosa  | — ± —           | —        | —       | —      |
-| BFS         | — ± —           | —        | —       | —      |
-| DFS         | — ± —           | —        | —       | —      |
+| Dijkstra    | 0.047±0.025     | 10       | 246,97  | 3      |
+| A*          | 0.055±0.027     | 6        | 320,85  | 5      |
+| Gananciosa  | 0.061±0.264     | 6        | 246,97  | 3      |
+| BFS         | 0.022±0.017     | 7        | 246,97  | 3      |
+| DFS         | 0.025±0.019     | 4        | 246,97  | 3      |
 
 **Par 3 — REM-01 → REM-15**
 
 | Algoritmo   | Tempo (ms) ± dp | Nós exp. | Custo   | Saltos |
 |-------------|-----------------|----------|---------|--------|
-| Dijkstra    | — ± —           | —        | —       | —      |
-| A*          | — ± —           | —        | —       | —      |
-| Gananciosa  | — ± —           | —        | —       | —      |
-| BFS         | — ± —           | —        | —       | —      |
-| DFS         | — ± —           | —        | —       | —      |
+| Dijkstra    | 0.078±0.033     | 24       | 468,78  | 6      |
+| A*          | 0.084±0.036     | 12       | 540,93  | 8      |
+| Gananciosa  | 0.113±0.047     | 17       | 468,78  | 6      |
+| BFS         | 0.046±0.022     | 25       | 468,78  | 6      |
+| DFS         | 0.090±0.425     | 25       | 468,78  | 6      |
 
 **Par 4 — REM-07 → REM-12**
 
 | Algoritmo   | Tempo (ms) ± dp | Nós exp. | Custo   | Saltos |
 |-------------|-----------------|----------|---------|--------|
-| Dijkstra    | — ± —           | —        | —       | —      |
-| A*          | — ± —           | —        | —       | —      |
-| Gananciosa  | — ± —           | —        | —       | —      |
-| BFS         | — ± —           | —        | —       | —      |
-| DFS         | — ± —           | —        | —       | —      |
+| Dijkstra    | 0.063±0.037     | 18       | 308,48  | 5      |
+| A*          | 0.052±0.028     | 6        | 316,93  | 5      |
+| Gananciosa  | 0.084±0.033     | 9        | 308,48  | 5      |
+| BFS         | 0.043±0.034     | 22       | 377,53  | 5      |
+| DFS         | 0.052±0.029     | 15       | 388,48  | 5      |
 
 **Par 5 — REM-02 → REM-09**
 
 | Algoritmo   | Tempo (ms) ± dp | Nós exp. | Custo   | Saltos |
 |-------------|-----------------|----------|---------|--------|
-| Dijkstra    | — ± —           | —        | —       | —      |
-| A*          | — ± —           | —        | —       | —      |
-| Gananciosa  | — ± —           | —        | —       | —      |
-| BFS         | — ± —           | —        | —       | —      |
-| DFS         | — ± —           | —        | —       | —      |
+| Dijkstra    | 0.065±0.038     | 17       | 363,32  | 5      |
+| A*          | 0.062±0.027     | 9        | 393,06  | 5      |
+| Gananciosa  | 0.092±0.039     | 14       | 363,32  | 5      |
+| BFS         | 0.048±0.532     | 19       | 363,32  | 5      |
+| DFS         | 0.066±0.030     | 17       | 363,32  | 5      |
 
 ### 5.3 Visualização da Topologia
 
@@ -271,6 +269,19 @@ A Busca Gananciosa apresenta desempenho intermediário: encontra caminhos razoá
 A heurística euclidiana escalonada direciona A\* para o destino, reduzindo o número de nós expandidos em relação ao Dijkstra. A redução esperada é mais pronunciada em pares com forte correlação geográfica (Par 1, Par 2) e menor em cenários cross-branch (Par 4), onde a heurística pode subestimar significativamente o custo real.
 
 BFS e DFS têm complexidade O(V + E) sem uso de heap, o que resulta em tempos de execução por operação menores, mas com custo de solução superior. Em grafos maiores (redes de smart grid reais com centenas de nós), essa diferença de complexidade assintótica seria mais relevante.
+
+Percebeu-se uma variação muito grande nos valores do desvio padrão do tempo de execução das buscas, com isso em vez de se rodar apenas 5 repetições de cada par do experimento, parametrizou-se o sistema para a execução de 10.000 repetições para reduzir a variabilidade. Como os tempos de execução são menores de um mili segundo as flutuações de tempo causadas por interrruções do Sistema Operacional, garbage collector do Pythoon ou cache da CPU se tornam mais significativas.
+
+O consumo de memória RAM medido através da função tracemalloc varia pouco, mas revela a eficiencia dos algoritmos.
+- Gananciosa: Mais baixa (2.31 KB avg) — priority queue pequena + heurística direciona foco.
+- DFS: Baixa (3.00 KB) — pilha recursiva enxuta, explora fundo primeiro.
+- BFS: Moderada (3.05 KB) — fila cresce com níveis, mas limitada em grafos rasos.
+- A*/Dijkstra: Alta (3.21/3.63 KB) — priority queues (heapq) armazenam distâncias/nós abertos.
+
+Com isso, conclui-se que:
+Eficiência vs Memória: Gananciosa/DFS usam menos RAM (~40% menos que Dijkstra), mas sacrificam otimalidade (custo +12%). Ideal para dispositivos com pouca memória.
+Escala: Correlação forte entre memória e nós expandidos — em pares longos (>15 nós), DFS usa até 4.6 KB vs 3.4 KB do A*.
+
 
 ### 6.3 Complexidade Assintótica
 
