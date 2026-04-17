@@ -21,7 +21,7 @@ Redes de backhaul sem fio para smart grid enfrentam requisitos conflitantes: bai
 
 Algoritmos de busca em grafos diferem fundamentalmente quanto ao uso de informação de custo: estratégias cegas (BFS, DFS) ignoram pesos, enquanto estratégias informadas (Dijkstra, A\*, Gananciosa) os incorporam em diferentes graus. A escolha do algoritmo impacta diretamente a qualidade da rota encontrada e o custo computacional da decisão, que em redes embarcadas de campo pode ser um recurso escasso.
 
-Este trabalho implementa e compara os cinco algoritmos em Python puro — sem bibliotecas que forneçam a lógica dos algoritmos — sobre uma topologia sintética de 25 nós que modela uma rede de backhaul de smart grid. Os objetivos são:
+Este trabalho implementa e compara os cinco algoritmos em Python, sem bibliotecas que forneçam a lógica dos algoritmos, sobre uma topologia sintética de 25 nós que modela uma rede de backhaul de smart grid. Os objetivos são:
 
 1. Implementar corretamente os cinco algoritmos com rastreamento de nós expandidos;
 2. Definir e justificar uma função de custo composta para enlaces RF de 900 MHz;
@@ -39,7 +39,7 @@ Este trabalho implementa e compara os cinco algoritmos em Python puro — sem bi
      - Uso de A* em redes de sensores / IoT industrial
 -->
 
-Algoritmos de busca em grafos têm sido extensivamente estudados no contexto de roteamento em redes de comunicação. [REF1] aplica Dijkstra em redes de distribuição elétrica para minimização de perdas de roteamento. [REF2] compara A\* e Dijkstra em redes mesh de sensores para smart grid, demonstrando redução de nós expandidos com heurística geográfica. [REF3] analisa BFS e DFS como baselines em benchmarks de algoritmos de roteamento, documentando sua inadequação em redes com pesos assimétricos.
+Algoritmos de busca em grafos têm sido extensivamente estudados no contexto de roteamento em redes de comunicação. O algorítmo Dijkstra foi aplicado em redes de distribuição elétrica para minimização de perdas de roteamento[^8]. A comparação de A\* e Dijkstra em redes mesh de sensores IoT[^9], também se aplicam a redes smart grid, demonstrando redução de nós expandidos com heurística geográfica.  M. Köhler and P. Rossmanith,[^10] analisam BFS e DFS como baselines em benchmarks de algoritmos de roteamento, documentando sua inadequação em redes com pesos assimétricos.
 
 ---
 
@@ -323,10 +323,13 @@ Como trabalho futuro, propõe-se a extensão do modelo para grafos direcionados 
 
 ## Referências
 
-- CORMEN, T.H. et al. **Introduction to Algorithms**. 4ª ed. MIT Press, 2022.
-- DIJKSTRA, E.W. A Note on Two Problems in Connexion with Graphs. **Numerische Mathematik**, v.1, n.1, p.269–271, 1959.
-- GE MDS. **MDS Orbit MCR Series Technical Manual** (900 MHz SCADA Radio). 2020.
-- HART, P.E.; NILSSON, N.J.; RAPHAEL, B. A Formal Basis for the Heuristic Determination of Minimum Cost Paths. **IEEE Trans. Systems Science and Cybernetics**, v.4, n.2, p.100–107, 1968.
-- ITU-R. **Recommendation P.525-4: Calculation of Free-Space Attenuation**. 2019.
-- RAPPAPORT, T.S. **Wireless Communications: Principles and Practice**. 2ª ed. Prentice Hall, 2002.
-- RUSSELL, S.; NORVIG, P. **Artificial Intelligence: A Modern Approach**. 4ª ed. Pearson, 2020.
+[^1]: CORMEN, T.H. et al. **Introduction to Algorithms**. 4ª ed. MIT Press, 2022.
+[^2]: DIJKSTRA, E.W. A Note on Two Problems in Connexion with Graphs. **Numerische Mathematik**, v.1, n.1, p.269–271, 1959.
+[^3]: GE MDS. **MDS Orbit MCR Series Technical Manual** (900 MHz SCADA Radio). 2020.
+[^4]: HART, P.E.; NILSSON, N.J.; RAPHAEL, B. A Formal Basis for the Heuristic Determination of Minimum Cost Paths. **IEEE Trans. Systems Science and Cybernetics**, v.4, n.2, p.100–107, 1968.
+[^5]: ITU-R. **Recommendation P.525-4: Calculation of Free-Space Attenuation**. 2019.
+[^6]: RAPPAPORT, T.S. **Wireless Communications: Principles and Practice**. 2ª ed. Prentice Hall, 2002.
+[^7]: RUSSELL, S.; NORVIG, P. **Artificial Intelligence: A Modern Approach**. 4ª ed. Pearson, 2020.
+[^8]: Jha, P., and S. Vidyasagar, "Dijkstra algorithm for feeder routing of radial distribution system," IOSR J. Eng., vol. 3, no. 1, pp. 1-6, Jan. 2013. [Online]. Available: https://iosrjen.org/Papers/vol3_issue1%20(part-4)/A03140106.pdf
+[^9]: A. Alharbi et al., "A comparative study against Bellman-Ford and Dijkstra for QoS-aware routing using A*," *Electron. J. Pure Appl. Math.*, 2024. [PDF](https://www.ejpam.com/ejpam/article/download/7091/2598)
+[^10]: M. Köhler and P. Rossmanith, "Analytical results on the BFS vs. DFS algorithm selection problem," \emph{arXiv:1509.02709}, Sep. 2015. [Online]. Available: https://arxiv.org/abs/1509.02709
