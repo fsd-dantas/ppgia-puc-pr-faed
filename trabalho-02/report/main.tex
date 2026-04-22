@@ -8,6 +8,7 @@
 \usepackage[utf8]{inputenc}
 \usepackage[T1]{fontenc}
 \usepackage[brazil]{babel}
+\addto\captionsbrazil{\renewcommand{\abstractname}{Abstract}}
 \usepackage{cite}
 \usepackage{amsmath,amssymb}
 \usepackage{graphicx}
@@ -45,9 +46,7 @@ de backhaul sem fio para smart grid. A topologia experimental consiste em
 Remotes), com pesos de aresta derivados de um custo composto baseado em
 latência, throughput e taxa de perda de pacotes, parametrizado segundo
 as especificações públicas do rádio GE MDS Orbit MCR 900~MHz e o modelo
-de propagação Friis com sombreamento log-normal. Cinco pares
-origem-destino foram avaliados em $\geq 5$ execuções independentes cada,
-mensurando tempo de execução, nós expandidos e memória de pico. Os
+de propagação Friis com sombreamento log-normal. Os
 resultados demonstram que A* reduz a expansão total de nós em 32{,}9\%
 em relação ao Dijkstra, mantendo o mesmo custo ótimo nos cinco pares
 avaliados. A busca gananciosa expande menos nós, porém produz caminhos
@@ -285,26 +284,14 @@ rápido em tempo absoluto, mas expandiu mais nós que A* e teve custo 22{,}4\%
 maior no par 4. DFS coincidiu com o custo ótimo nesta topologia, mas esse
 resultado decorre da ordem de vizinhança e não constitui garantia algorítmica.
 
-\begin{figure}[h]
+\begin{figure}[t]
   \centering
-  \setlength{\fboxsep}{4pt}
-  \fbox{
-  \begin{minipage}{0.90\columnwidth}
-  \centering
-  \footnotesize
-  \begin{tabular}{c}
-  AP-01 \hspace{1.5em} AP-02 \hspace{1.5em} AP-03 \\
-  $\downarrow$ \hspace{3.0em} $\downarrow$ \hspace{3.0em} $\downarrow$ \\
-  SAF-01 \quad SAF-02 \quad SAF-03 \quad SAF-04 \\
-  SAF-05 \quad SAF-06 \quad SAF-07 \\
-  $\downarrow$ \\
-  REM-01 \ldots REM-15
-  \end{tabular}
-  \end{minipage}}
-  \caption{Esquema conceitual da topologia sintética de backhaul. O repositório
-           gera visualizações HTML interativas com pesos e caminhos destacados
-           para cada algoritmo no primeiro par avaliado.}
-  \label{fig:topo}
+  \includegraphics[width=\columnwidth]{fig_nos_expandidos.pdf}
+  \caption{Nós expandidos por algoritmo nos cinco pares de teste.
+           P1: REM-01$\to$AP-01; P2: REM-14$\to$AP-02;
+           P3: REM-01$\to$REM-15; P4: REM-07$\to$REM-12;
+           P5: REM-02$\to$REM-09.}
+  \label{fig:nos}
 \end{figure}
 
 % =============================================================================
