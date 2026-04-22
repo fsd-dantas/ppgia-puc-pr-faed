@@ -343,7 +343,12 @@ expandidos, tornando-se relevante em redes de smart grid com centenas de nós.
 
 \subsection{Complexidade Assintótica}
 
-\begin{table}[h]
+A Tabela~\ref{tab:bigO} resume as complexidades de tempo e espaço dos
+cinco algoritmos. Na prática, a constante oculta de A* é menor que a de
+Dijkstra quando a heurística é informativa; o pior caso de A* degenera
+para Dijkstra quando $h(n) = 0$.
+
+\begin{table}[ht]
 \caption{Complexidade assintótica}
 \label{tab:bigO}
 \centering
