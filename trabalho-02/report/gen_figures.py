@@ -2,20 +2,27 @@
 Gera figuras para o artigo IEEE — Trabalho 02 FAED/PPGIA/PUC-PR.
 
 Uso:
-    python report/gen_figures.py
-    python report/gen_figures.py --both   # gera fig 1 e fig 2
+    python report/gen_figures.py             # fig 1 (nós expandidos)
+    python report/gen_figures.py --both      # fig 1 e fig 2 (custo)
+    python report/gen_figures.py --topo      # topologia da rede
 
 Saída: report/figures/fig_nos_expandidos.pdf
                       fig_custo_caminho.pdf
+                      fig_topologia.pdf
 """
 import argparse
 import csv
 import os
+import sys
+
+# permite importar src.* a partir da raiz do projeto
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
+import matplotlib.lines as mlines
 import numpy as np
 
 # ─── dados ───────────────────────────────────────────────────────────────────
@@ -112,9 +119,86 @@ def _fig_custo_caminho(dados):
     print(f'Gerado: {path}')
 
 
+def _fig_topologia():
+    from src.graph_data import carregar_grafo
+    from src.dijkstra import dijkstra
+    from src.metrics import medir
+
+    grafo = carregar_grafo()
+
+    # Caminho Dijkstra Par 1: REM-01 (11) → AP-01 (1)
+    resultado = medir(dijkstra)(grafo, 11, 1)
+    caminho_ids = set()
+    path = resultado.get('caminho', [])
+    for i in range(len(path) - 1):
+        caminho_ids.add((min(path[i], path[i+1]), max(path[i], path[i+1])))
+
+    # Estilo por tipo
+    COR_NO   = {'AP': '#d62728', 'SAF': '#ff7f0e', 'Remote': '#2ca02c'}
+    FORMA_NO = {'AP': '*',       'SAF': 's',        'Remote': 'o'}
+    TAM_NO   = {'AP': 180,       'SAF': 60,         'Remote': 40}
+
+    fig, ax = plt.subplots(figsize=(3.4, 3.0))
+
+    # Arestas
+    visitados = set()
+    for u, vizinhos in grafo._adj.items():
+        for v, _, _ in vizinhos:
+            par = (min(u, v), max(u, v))
+            if par in visitados:
+                continue
+            visitados.add(par)
+            xu, yu = grafo.nos[u]['x'], grafo.nos[u]['y']
+            xv, yv = grafo.nos[v]['x'], grafo.nos[v]['y']
+            if par in caminho_ids:
+                ax.plot([xu, xv], [yu, yv], '-', color='#1f77b4',
+                        linewidth=2.0, zorder=2)
+            else:
+                ax.plot([xu, xv], [yu, yv], '-', color='#cccccc',
+                        linewidth=0.6, zorder=1)
+
+    # Nós
+    for nid, attrs in grafo.nos.items():
+        tipo = attrs['tipo']
+        ax.scatter(attrs['x'], attrs['y'],
+                   c=COR_NO[tipo], marker=FORMA_NO[tipo],
+                   s=TAM_NO[tipo], zorder=3,
+                   edgecolors='black', linewidths=0.4)
+
+    # Legenda de tipos
+    handles = [
+        mlines.Line2D([], [], marker='*', color='w', markerfacecolor='#d62728',
+                      markeredgecolor='black', markeredgewidth=0.4,
+                      markersize=9, label='AP'),
+        mlines.Line2D([], [], marker='s', color='w', markerfacecolor='#ff7f0e',
+                      markeredgecolor='black', markeredgewidth=0.4,
+                      markersize=6, label='SAF'),
+        mlines.Line2D([], [], marker='o', color='w', markerfacecolor='#2ca02c',
+                      markeredgecolor='black', markeredgewidth=0.4,
+                      markersize=5, label='Remote'),
+        mlines.Line2D([], [], color='#1f77b4', linewidth=2,
+                      label='Dijkstra P1'),
+    ]
+    ax.legend(handles=handles, fontsize=6, loc='upper left',
+              framealpha=0.8, handlelength=1.2)
+
+    ax.set_xlabel('x (km)', fontsize=7)
+    ax.set_ylabel('y (km)', fontsize=7)
+    ax.tick_params(labelsize=6)
+    ax.spines[['top', 'right']].set_visible(False)
+    ax.set_aspect('equal')
+
+    fig.tight_layout(pad=0.4)
+    path_out = os.path.join(OUT_DIR, 'fig_topologia.pdf')
+    fig.savefig(path_out, format='pdf', bbox_inches='tight')
+    plt.close(fig)
+    print(f'Gerado: {path_out}')
+
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--both', action='store_true')
+    parser.add_argument('--topo', action='store_true')
     args = parser.parse_args()
 
     os.makedirs(OUT_DIR, exist_ok=True)
@@ -122,3 +206,5 @@ if __name__ == '__main__':
     _fig_nos_expandidos(dados)
     if args.both:
         _fig_custo_caminho(dados)
+    if args.topo:
+        _fig_topologia()
