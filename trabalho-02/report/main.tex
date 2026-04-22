@@ -26,12 +26,11 @@
        Redes de Backhaul Sem Fio para Smart Grid}
 
 \author{
-  \IEEEauthorblockN{[Nome dos Autores]}
+  \IEEEauthorblockN{Fernando Sabino Dantas, Guilherme Bauml Campagnoli, Rafael de Camargo Sampaio}
   \IEEEauthorblockA{
-    Programa de Pós-Graduação em Informática Aplicada (PPGIA)\\
-    Pontifícia Universidade Católica do Paraná (PUC-PR)\\
-    Curitiba, Brasil\\
-    \{email\}@ppgia.pucpr.br
+    \textit{Programa de Pós-Graduação em Informática Aplicada (PPGIA)}\\
+    \textit{Pontifícia Universidade Católica do Paraná (PUC-PR)}\\
+    Curitiba, Brasil
   }
 }
 
@@ -49,9 +48,11 @@ as especificações públicas do rádio GE MDS Orbit MCR 900~MHz e o modelo
 de propagação Friis com sombreamento log-normal. Cinco pares
 origem-destino foram avaliados em $\geq 5$ execuções independentes cada,
 mensurando tempo de execução, nós expandidos e memória de pico. Os
-resultados demonstram que A* reduz a expansão de nós em até [X]\% em
-relação ao Dijkstra, mantendo otimalidade de solução, enquanto BFS e DFS
-produzem caminhos sistematicamente subótimos em grafos ponderados.
+resultados demonstram que A* reduz a expansão total de nós em 32{,}9\%
+em relação ao Dijkstra, mantendo o mesmo custo ótimo nos cinco pares
+avaliados. A busca gananciosa expande menos nós, porém produz caminhos
+mais caros em quatro dos cinco pares; BFS e DFS servem como linhas de
+base não-informadas, sem garantia de otimalidade em grafos ponderados.
 \end{abstract}
 
 \begin{IEEEkeywords}
@@ -91,8 +92,28 @@ compatíveis com LGPD. As contribuições são:
 % =============================================================================
 \section{Trabalhos Relacionados}
 
-% TODO: referenciar artigos sobre roteamento em redes de smart grid e
-% comparações de algoritmos de busca em grafos de comunicação.
+O algoritmo de Dijkstra é a referência clássica para caminhos mínimos em
+grafos com pesos não-negativos \cite{dijkstra1959}. A* generaliza essa
+ideia ao combinar custo acumulado e estimativa heurística do custo restante,
+preservando otimalidade quando a heurística é admissível e consistente
+\cite{hart1968}. Russell e Norvig \cite{russell2020} discutem essa família
+de algoritmos no contexto de busca informada, enquanto Cormen et al.
+\cite{cormen2022} apresentam as propriedades fundamentais de BFS, DFS e
+caminhos mínimos.
+
+No domínio de redes de comunicação, a escolha do algoritmo de roteamento
+depende não apenas da complexidade assintótica, mas também da semântica do
+peso de enlace. O algoritmo de Dijkstra foi aplicado em redes de distribuição
+elétrica para minimização de perdas de roteamento \cite{jha2013dijkstra}.
+A comparação entre A* e Dijkstra em redes mesh de sensores IoT
+\cite{alharbi2024astar} demonstra redução de nós expandidos com heurística
+geográfica, resultado que também se aplica a topologias de smart grid.
+Köhler e Rossmanith \cite{kohler2015bfsdfs} analisam BFS e DFS como linhas
+de base em benchmarks de roteamento, documentando sua inadequação em grafos
+com pesos assimétricos. Por isso, este trabalho combina modelos de propagação
+RF \cite{rappaport2002,itu2019} e especificações públicas do rádio GE MDS
+Orbit MCR \cite{ge_mds_mcr} para gerar uma topologia sintética, permitindo
+avaliar os algoritmos sem expor dados operacionais reais.
 
 % =============================================================================
 \section{Modelagem da Rede e Função de Custo}
@@ -100,7 +121,7 @@ compatíveis com LGPD. As contribuições são:
 \subsection{Topologia}
 
 A rede é modelada como um grafo não-direcionado $G = (V, E)$ com $|V| = 25$
-nós e $|E| = 32$ arestas. Os nós pertencem a três categorias:
+nós e $|E| = 34$ arestas. Os nós pertencem a três categorias:
 
 \begin{itemize}
   \item \textbf{AP} (3 nós): Access Points com conexão ao backbone cabeado;
@@ -200,37 +221,89 @@ Cinco pares origem-destino cobrem cenários distintos do backhaul:
 \end{tabular}
 \end{table}
 
-Cada par foi executado $N = 5$ vezes independentes por algoritmo.
-Métricas coletadas: tempo de execução (ms), nós expandidos, custo do caminho,
-comprimento (saltos) e memória de pico (KB).
+Os experimentos foram executados em um laptop com processador Intel Core
+Ultra~5 125U (frequência máxima 4,30\,GHz) e 16\,GB de memória DDR5-5600.
+
+Cada par foi executado $N = 5$ vezes independentes por algoritmo em Python
+3.13.13, usando uma base SQLite sintética gerada com semente fixa
+(\texttt{seed=42}). Métricas coletadas: tempo de execução (ms), nós
+expandidos, custo do caminho, comprimento (saltos) e memória de pico (KB).
+Os tempos de execução são inferiores a 1\,ms, portanto flutuações causadas
+por interrupções do sistema operacional, coleta de lixo do Python ou
+variações de cache de CPU dominam a variância temporal; a métrica mais
+informativa neste experimento é a expansão de nós.
 
 \subsection{Resultados}
 
-% TODO: substituir pela tabela gerada a partir de results/metrics/sumario.csv
-
-\begin{table}[h]
-\caption{Resultados médios — Par 1 (REM-01 $\to$ AP-01)}
+\begin{table*}[t]
+\caption{Resultados médios por par e algoritmo ($N=5$)}
 \label{tab:resultados}
 \centering
-\begin{tabular}{lrrrr}
+\scriptsize
+\begin{tabular}{cllrrrr}
 \toprule
-Algoritmo & Tempo (ms) & Nós & Custo & Saltos \\
+\# & Origem--Destino & Algoritmo & Tempo (ms) & Nós & Custo & Saltos \\
 \midrule
-Dijkstra   & -- & -- & -- & -- \\
-A*         & -- & -- & -- & -- \\
-Gananciosa & -- & -- & -- & -- \\
-BFS        & -- & -- & -- & -- \\
-DFS        & -- & -- & -- & -- \\
+1 & REM-01--AP-01  & Dijkstra   & 0.0537 & 4  & 116.1030 & 2 \\
+1 & REM-01--AP-01  & A*         & 0.0250 & 3  & 116.1030 & 2 \\
+1 & REM-01--AP-01  & Gananciosa & 0.0706 & 3  & 116.1030 & 2 \\
+1 & REM-01--AP-01  & BFS        & 0.0122 & 3  & 116.1030 & 2 \\
+1 & REM-01--AP-01  & DFS        & 0.0142 & 3  & 116.1030 & 2 \\
+\midrule
+2 & REM-14--AP-02  & Dijkstra   & 0.0247 & 10 & 246.9680 & 3 \\
+2 & REM-14--AP-02  & A*         & 0.0304 & 6  & 246.9680 & 3 \\
+2 & REM-14--AP-02  & Gananciosa & 0.0262 & 6  & 320.8501 & 5 \\
+2 & REM-14--AP-02  & BFS        & 0.0103 & 7  & 246.9680 & 3 \\
+2 & REM-14--AP-02  & DFS        & 0.0128 & 4  & 246.9680 & 3 \\
+\midrule
+3 & REM-01--REM-15 & Dijkstra   & 0.0414 & 24 & 468.7836 & 6 \\
+3 & REM-01--REM-15 & A*         & 0.0489 & 17 & 468.7836 & 6 \\
+3 & REM-01--REM-15 & Gananciosa & 0.0370 & 12 & 540.9297 & 8 \\
+3 & REM-01--REM-15 & BFS        & 0.0209 & 25 & 468.7836 & 6 \\
+3 & REM-01--REM-15 & DFS        & 0.0358 & 25 & 468.7836 & 6 \\
+\midrule
+4 & REM-07--REM-12 & Dijkstra   & 0.0323 & 18 & 308.4837 & 5 \\
+4 & REM-07--REM-12 & A*         & 0.0313 & 9  & 308.4837 & 5 \\
+4 & REM-07--REM-12 & Gananciosa & 0.0205 & 6  & 316.9294 & 5 \\
+4 & REM-07--REM-12 & BFS        & 0.0216 & 22 & 377.5272 & 5 \\
+4 & REM-07--REM-12 & DFS        & 0.0291 & 15 & 308.4837 & 5 \\
+\midrule
+5 & REM-02--REM-09 & Dijkstra   & 0.0295 & 17 & 363.3195 & 5 \\
+5 & REM-02--REM-09 & A*         & 0.0453 & 14 & 363.3195 & 5 \\
+5 & REM-02--REM-09 & Gananciosa & 0.0291 & 9  & 393.0632 & 5 \\
+5 & REM-02--REM-09 & BFS        & 0.0197 & 19 & 363.3195 & 5 \\
+5 & REM-02--REM-09 & DFS        & 0.0290 & 17 & 363.3195 & 5 \\
 \bottomrule
 \end{tabular}
-\end{table}
+\end{table*}
 
-% TODO: inserir figura gerada pelo Pyvis / matplotlib
+No agregado, Dijkstra expandiu 73 nós nos cinco pares, enquanto A* expandiu
+49, uma redução de 32{,}9\% mantendo custo idêntico ao ótimo em todos os
+casos. A busca gananciosa foi a mais econômica em expansão média
+(7{,}2 nós), mas apresentou custo médio 12{,}3\% superior ao ótimo. BFS foi
+rápido em tempo absoluto, mas expandiu mais nós que A* e teve custo 22{,}4\%
+maior no par 4. DFS coincidiu com o custo ótimo nesta topologia, mas esse
+resultado decorre da ordem de vizinhança e não constitui garantia algorítmica.
+
 \begin{figure}[h]
   \centering
-  \includegraphics[width=\columnwidth]{topologia_backhaul}
-  \caption{Topologia da rede de backhaul (25 nós). AP: vermelho; SAF:
-           laranja; Remote: verde. Espessura das arestas proporcional ao custo.}
+  \setlength{\fboxsep}{4pt}
+  \fbox{
+  \begin{minipage}{0.90\columnwidth}
+  \centering
+  \footnotesize
+  \begin{tabular}{c}
+  AP-01 \hspace{1.5em} AP-02 \hspace{1.5em} AP-03 \\
+  $\downarrow$ \hspace{3.0em} $\downarrow$ \hspace{3.0em} $\downarrow$ \\
+  SAF-01 \quad SAF-02 \quad SAF-03 \quad SAF-04 \\
+  SAF-05 \quad SAF-06 \quad SAF-07 \\
+  $\downarrow$ \\
+  REM-01 \ldots REM-15
+  \end{tabular}
+  \end{minipage}}
+  \caption{Esquema conceitual da topologia sintética de backhaul. O repositório
+           gera visualizações HTML interativas com pesos e caminhos destacados
+           para cada algoritmo no primeiro par avaliado.}
   \label{fig:topo}
 \end{figure}
 
@@ -240,16 +313,37 @@ DFS        & -- & -- & -- & -- \\
 \subsection{Qualidade da Solução}
 
 Dijkstra e A* retornam, por construção, o caminho de custo mínimo segundo
-a função \eqref{eq:peso}. BFS e DFS não incorporam pesos na decisão de
-expansão, produzindo caminhos com custo sistematicamente superior ao ótimo
-nesta topologia.
+a função \eqref{eq:peso}. Os resultados confirmam custos idênticos para
+ambos nos cinco pares avaliados, validando empiricamente a implementação
+da heurística admissível. A busca gananciosa mostra o trade-off esperado:
+em quatro pares encontrou caminhos de custo superior ao ótimo, com
+sobrecusto máximo de 29{,}9\% no par REM-14--AP-02.
+
+BFS e DFS não incorporam pesos na decisão de expansão. Por isso, mesmo
+quando coincidem com o custo ótimo, o resultado deve ser interpretado como
+efeito da topologia e da ordem de vizinhança, não como garantia de qualidade
+de solução. O caso REM-07--REM-12 ilustra essa limitação: BFS escolheu um
+caminho com custo 22{,}4\% superior ao ótimo apesar de preservar o mesmo
+número de saltos.
 
 \subsection{Eficiência Computacional}
 
 A heurística \eqref{eq:heuristica} direciona A* para o destino, reduzindo
-o número de nós expandidos em relação ao Dijkstra. Em grafos hierárquicos
-como o backhaul modelado, onde a topologia reflete proximidade geográfica,
-espera-se uma redução significativa de nós expandidos.
+o número de nós expandidos em relação ao Dijkstra. A maior redução ocorreu
+no par REM-07--REM-12, de 18 para 9 nós (50\%). No agregado, a redução foi
+de 73 para 49 nós (32{,}9\%). O custo temporal medido é muito pequeno para
+todos os algoritmos por causa da escala reduzida do grafo, portanto a métrica
+mais informativa neste experimento é a expansão de nós, não o tempo absoluto.
+
+O consumo de memória de pico, medido via \texttt{tracemalloc}, reflete
+diretamente o tamanho das estruturas abertas de cada algoritmo. A busca
+gananciosa registrou o menor consumo médio (2,31\,KB), pois mantém uma fila
+de prioridade pequena ao direcionar a busca pela heurística. DFS e BFS
+apresentaram valores intermediários (3,00 e 3,05\,KB, respectivamente).
+A* e Dijkstra registraram os maiores consumos (3,21 e 3,63\,KB), reflexo
+das filas de prioridade que armazenam todos os nós abertos com seus custos.
+Em grafos maiores, essa diferença cresce proporcionalmente ao número de nós
+expandidos, tornando-se relevante em redes de smart grid com centenas de nós.
 
 \subsection{Complexidade Assintótica}
 
@@ -273,15 +367,34 @@ DFS         & $O(V+E)$        & $O(V)$  \\
 \subsection{Trade-offs para Backhaul Smart Grid}
 
 Em redes de smart grid, o custo de falha de entrega de um telegrama SCADA
-(controle) supera o custo computacional de qualquer algoritmo.
-Portanto, a prioridade é otimalidade e confiabilidade do caminho.
-A* apresenta o melhor equilíbrio: garante otimalidade com custo
-computacional reduzido pela heurística geográfica.
+(controle) supera o custo computacional de qualquer algoritmo nesta escala.
+Portanto, a prioridade é otimalidade e previsibilidade da rota. A* apresenta
+o melhor equilíbrio neste experimento: garante otimalidade como Dijkstra,
+mas reduz a expansão de nós pela heurística geográfica. A busca gananciosa
+é atrativa quando o objetivo é resposta rápida com baixo consumo de memória,
+mas o sobrecusto observado em quatro pares a torna inadequada como decisão
+primária de roteamento para enlaces críticos.
 
 % =============================================================================
 \section{Conclusão}
 
-% TODO
+Este trabalho comparou Dijkstra, A*, busca gananciosa, BFS e DFS em uma
+topologia sintética de backhaul sem fio para smart grid. A função de custo
+composto integrou latência, throughput normalizado e perda de pacotes,
+enquanto a heurística euclidiana escalonada permitiu aplicar A* preservando
+admissibilidade e consistência.
+
+Os resultados mostram que A* manteve o mesmo custo ótimo do Dijkstra nos
+cinco pares avaliados e reduziu a expansão total de nós em 32{,}9\%. A busca
+gananciosa expandiu menos nós, mas introduziu sobrecusto de rota em quatro
+pares, chegando a 29{,}9\%. BFS e DFS permanecem úteis como linhas de base
+didáticas, porém não devem ser usados como estratégia principal em grafos
+ponderados quando o custo do enlace representa qualidade operacional.
+
+Como trabalhos futuros, recomenda-se ampliar o número de topologias
+sintéticas, variar os pesos da função de custo conforme perfis de tráfego
+SCADA distintos e comparar os algoritmos com protocolos de roteamento usados
+em redes industriais e IoT de baixa potência.
 
 % =============================================================================
 \bibliographystyle{IEEEtran}
