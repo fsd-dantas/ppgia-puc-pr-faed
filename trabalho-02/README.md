@@ -9,8 +9,7 @@
 ## Domínio
 
 Rede de backhaul sem fio para smart grid, modelada a partir das características
-do rádio **GE MDS Orbit MCR 900 MHz**. A topologia é **inteiramente sintética**
-e não contém nenhum dado real da infraestrutura da COPEL (conformidade LGPD).
+do rádio **GE MDS Orbit MCR 900 MHz**. A topologia é **inteiramente sintética**.
 
 Os parâmetros de enlace (RSSI, SNR, latência, throughput, perda de pacotes)
 foram gerados pelo modelo Friis + sombreamento log-normal com semente RNG fixa
@@ -54,13 +53,6 @@ h(n) = dist_euclidiana(n, destino) × custo_mínimo_por_km
 | `src/greedy.py`     | Busca Gananciosa  | Não         |
 | `src/bfs.py`        | BFS               | Saltos mín. |
 | `src/dfs.py`        | DFS               | Não         |
-
----
-
-## Guias
-
-- [Guia de Execução do Experimento](GUIA_EXECUCAO_EXPERIMENTO.md)
-- [Guia de Estudo e Apresentação](GUIA_APRESENTACAO.md)
 
 ---
 
@@ -133,13 +125,3 @@ trabalho-02/
 └── requirements.txt
 ```
 
----
-
-## Conformidade LGPD
-
-Todos os dados são sintéticos. Os parâmetros de enlace são derivados
-exclusivamente de fontes públicas:
-
-- GE MDS Orbit MCR Datasheet (900 MHz, narrow-band SCADA)
-- ITU-R P.525 — Free-Space Path Loss
-- Rappaport, T.S. — *Wireless Communications*, 2ª ed. Prentice Hall, 2002.
