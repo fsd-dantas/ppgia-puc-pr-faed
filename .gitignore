@@ -28,6 +28,12 @@ trabalho-*/results/
 *.swp
 *~
 
+# ── Guias de uso local (não fazem parte do repositório público) ──────────────
+trabalho-*/GUIA_*.md
+
+# ── Bibliotecas JS bundled pelo Pyvis ────────────────────────────────────────
+trabalho-*/lib/
+
 # ── OS ───────────────────────────────────────────────────────────────────────
 .DS_Store
 Thumbs.db

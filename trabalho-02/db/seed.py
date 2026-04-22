@@ -34,7 +34,11 @@ ALPHA = 0.4   # latência
 BETA  = 0.4   # inverso do throughput normalizado
 GAMMA = 0.2   # taxa de perda de pacotes
 
-# Throughput máximo de referência (SNR de pico = 25 dB)
+# Referências de normalização para o custo composto.
+LATENCIA_REF_MS = 20.0
+PERDA_REF_PCT   = 15.0
+
+# Throughput máximo de referência (SNR de pico = 25 dB).
 _TP_MAX_KBPS = (LARGURA_BANDA_HZ * math.log2(1 + 10 ** (25 / 10)) * EFICIENCIA_SPEC) / 1000
 
 # ──────────────────────────────────────────────────────────────────────────────
@@ -117,9 +121,9 @@ def gerar_kpis(potencia_tx_dbm: float, distancia_km: float, rng: random.Random) 
     pl      = friis_perda_db(distancia_km) + rng.gauss(0.0, SIGMA_SOMBRA_DB)
     rssi    = potencia_tx_dbm - pl
     snr     = rssi - PISO_RUIDO_DBM
-    snr_lin = 10.0 ** (max(snr, 0.0) / 10.0)
+    snr_lin = 10.0 ** (snr / 10.0)
     tp      = (LARGURA_BANDA_HZ * math.log2(1.0 + snr_lin) * EFICIENCIA_SPEC) / 1000.0
-    lat     = LATENCIA_BASE_MS + (distancia_km / 3e5) * 1e6 + rng.uniform(3.0, 15.0)
+    lat     = LATENCIA_BASE_MS + (distancia_km / 3e5) * 1e3 + rng.uniform(3.0, 15.0)
     perda   = min(max(5.0 - 0.18 * snr + rng.gauss(0.0, 0.3), 0.0), 15.0)
     return {
         'rssi_dbm':          round(rssi,  2),
@@ -131,11 +135,15 @@ def gerar_kpis(potencia_tx_dbm: float, distancia_km: float, rng: random.Random) 
 
 
 def calcular_peso(kpis: dict) -> float:
+    lat_norm = min(kpis['latencia_ms'] / LATENCIA_REF_MS, 1.0)
     tp_norm = min(kpis['throughput_kbps'] / _TP_MAX_KBPS, 1.0)
+    perda_norm = min(kpis['perda_pacotes_pct'] / PERDA_REF_PCT, 1.0)
     return round(
-        ALPHA * kpis['latencia_ms']
-        + BETA  * (1.0 - tp_norm) * 100.0
-        + GAMMA * kpis['perda_pacotes_pct'],
+        100.0 * (
+            ALPHA * lat_norm
+            + BETA  * (1.0 - tp_norm)
+            + GAMMA * perda_norm
+        ),
         4,
     )
 
@@ -157,6 +165,7 @@ def semear(db_path: str = DB_PADRAO, seed: int = 42) -> None:
 
     conn = sqlite3.connect(db_path)
     conn.execute("PRAGMA foreign_keys = ON")
+    conn.execute("PRAGMA journal_mode = OFF")
 
     # Recria as tabelas a partir do schema
     schema = os.path.join(os.path.dirname(__file__), 'schema.sql')
@@ -203,7 +212,7 @@ def semear(db_path: str = DB_PADRAO, seed: int = 42) -> None:
     tamanho_kb = os.path.getsize(db_path) / 1024
     print(f"Banco gerado: {db_path}  ({tamanho_kb:.1f} KB)")
     print(f"  {len(NOS)} nós  |  {len(ARESTAS)} enlaces  |  {len(CASOS_TESTE)} casos de teste")
-    print(f"  TP_MAX ref.: {_TP_MAX_KBPS:.1f} kbps  |  semente RNG: {seed}")
+    print(f"  TP_MAX ref.: {_TP_MAX_KBPS:.1f} kbps  |  seed RNG: {seed}")
 
 
 if __name__ == '__main__':

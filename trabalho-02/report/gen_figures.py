@@ -92,23 +92,30 @@ def _fig_nos_expandidos(dados):
 def _fig_custo_caminho(dados):
     pares = list(PAR_LABELS.keys())
     x     = np.arange(len(pares))
-    n     = len(ALGORITMOS)
-    w     = 0.14
-    offsets = np.linspace(-(n - 1) / 2 * w, (n - 1) / 2 * w, n)
 
     fig, ax = plt.subplots(figsize=(3.4, 2.5))
 
-    for i, (alg, cor, hach) in enumerate(zip(ALGORITMOS, CORES, HACHS)):
+    estilos = {
+        'Dijkstra':   ('o', '-'),
+        'A*':         ('s', '--'),
+        'Gananciosa': ('^', '-.'),
+        'BFS':        ('D', ':'),
+        'DFS':        ('x', '-'),
+    }
+
+    for alg, cor in zip(ALGORITMOS, CORES):
         valores = [dados[(p, alg)]['custo'] for p in pares]
-        ax.bar(x + offsets[i], valores, w, label=alg,
-               color=cor, hatch=hach, edgecolor='black', linewidth=0.5)
+        marker, linestyle = estilos[alg]
+        ax.plot(x, valores, linestyle=linestyle, marker=marker, label=alg,
+                color=cor, linewidth=1.0, markersize=3.5,
+                markeredgewidth=0.6)
 
     ax.set_xticks(x)
     ax.set_xticklabels([PAR_LABELS[p] for p in pares], fontsize=6.5)
     ax.set_ylabel('Custo do caminho', fontsize=7)
     ax.yaxis.set_tick_params(labelsize=7)
-    ax.legend(fontsize=5.5, ncol=5, loc='upper left',
-              columnspacing=0.5, handlelength=1.2, handletextpad=0.4)
+    ax.legend(fontsize=5.5, ncol=3, loc='upper left',
+              columnspacing=0.7, handlelength=1.6, handletextpad=0.4)
     ax.grid(axis='y', linestyle=':', linewidth=0.5, alpha=0.7)
     ax.spines[['top', 'right']].set_visible(False)
 
@@ -140,6 +147,10 @@ def _fig_topologia():
 
     fig, ax = plt.subplots(figsize=(3.4, 3.0))
 
+    xs = [attrs['x'] for attrs in grafo.nos.values()]
+    ys = [attrs['y'] for attrs in grafo.nos.values()]
+    x0, y0 = min(xs), min(ys)
+
     # Arestas
     visitados = set()
     for u, vizinhos in grafo._adj.items():
@@ -148,8 +159,8 @@ def _fig_topologia():
             if par in visitados:
                 continue
             visitados.add(par)
-            xu, yu = grafo.nos[u]['x'], grafo.nos[u]['y']
-            xv, yv = grafo.nos[v]['x'], grafo.nos[v]['y']
+            xu, yu = grafo.nos[u]['x'] - x0, grafo.nos[u]['y'] - y0
+            xv, yv = grafo.nos[v]['x'] - x0, grafo.nos[v]['y'] - y0
             if par in caminho_ids:
                 ax.plot([xu, xv], [yu, yv], '-', color='#1f77b4',
                         linewidth=2.0, zorder=2)
@@ -160,7 +171,7 @@ def _fig_topologia():
     # Nós
     for nid, attrs in grafo.nos.items():
         tipo = attrs['tipo']
-        ax.scatter(attrs['x'], attrs['y'],
+        ax.scatter(attrs['x'] - x0, attrs['y'] - y0,
                    c=COR_NO[tipo], marker=FORMA_NO[tipo],
                    s=TAM_NO[tipo], zorder=3,
                    edgecolors='black', linewidths=0.4)
@@ -182,8 +193,8 @@ def _fig_topologia():
     ax.legend(handles=handles, fontsize=6, loc='upper left',
               framealpha=0.8, handlelength=1.2)
 
-    ax.set_xlabel('x (km)', fontsize=7)
-    ax.set_ylabel('y (km)', fontsize=7)
+    ax.set_xlabel('x relativo (km)', fontsize=7)
+    ax.set_ylabel('y relativo (km)', fontsize=7)
     ax.tick_params(labelsize=6)
     ax.spines[['top', 'right']].set_visible(False)
     ax.set_aspect('equal')

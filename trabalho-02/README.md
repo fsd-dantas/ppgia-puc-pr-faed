@@ -25,13 +25,17 @@ foram gerados pelo modelo Friis + sombreamento log-normal com semente RNG fixa
 | AP       |   3 | Access Points — nós raiz com backbone cabeado      |
 | SAF      |   7 | Store-and-Forward — repetidores intermediários     |
 | Remote   |  15 | Concentradores de medidores inteligentes / RTUs    |
-| **Total**| **25** | **32 enlaces não-direcionados**               |
+| **Total**| **25** | **34 enlaces não-direcionados**               |
 
 ### Peso do enlace (custo composto)
 
 ```
-peso = 0.4 × latência_ms  +  0.4 × (1 − tp_norm) × 100  +  0.2 × perda_pct
+peso = 100 × (0.4 × latência_norm  +  0.4 × (1 − tp_norm)  +  0.2 × perda_norm)
 ```
+
+Normalização usada: `latência_norm = min(latência_ms / 20, 1)`,
+`tp_norm = min(throughput_kbps / 914.0, 1)` e
+`perda_norm = min(perda_pct / 15, 1)`.
 
 ### Heurística A\* / Gananciosa (admissível e consistente)
 
@@ -53,34 +57,29 @@ h(n) = dist_euclidiana(n, destino) × custo_mínimo_por_km
 
 ---
 
+## Guias
+
+- [Guia de Execução do Experimento](GUIA_EXECUCAO_EXPERIMENTO.md)
+- [Guia de Estudo e Apresentação](GUIA_APRESENTACAO.md)
+
+---
+
 ## Pré-requisitos
 
 - Python 3.10+
-- PostgreSQL 14+
 - Dependências Python: `pip install -r requirements.txt`
 
 ---
 
 ## Configuração
 
-### 1. Banco de dados
+### 1. Banco de dados SQLite
 
 ```bash
-# Criar banco e usuário
-psql -U postgres -c "CREATE USER backhaul WITH PASSWORD 'backhaul';"
-psql -U postgres -c "CREATE DATABASE backhaul_sim OWNER backhaul;"
-
-# Aplicar schema
-psql -U backhaul -d backhaul_sim -f db/schema.sql
-
-# Popular dados sintéticos
-python -m db.seed
+python -m db.seed --seed 42
 ```
 
-Variável de ambiente opcional (substitui o DSN padrão):
-```bash
-export BACKHAUL_DB_DSN="postgresql://backhaul:backhaul@localhost:5432/backhaul_sim"
-```
+O comando gera `db/backhaul_sim.db` com dados sintéticos reproduzíveis.
 
 ### 2. Executar experimentos
 
@@ -110,7 +109,7 @@ results/
 ```
 trabalho-02/
 ├── db/
-│   ├── schema.sql          # DDL PostgreSQL
+│   ├── schema.sql          # DDL SQLite
 │   └── seed.py             # Gerador de dados sintéticos
 ├── src/
 │   ├── graph.py            # Classe Grafo (lista de adjacência)

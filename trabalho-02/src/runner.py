@@ -2,7 +2,7 @@
 Executor de experimentos — orquestra pares de teste e coleta estatísticas.
 
 Para cada par (origem, destino) e cada algoritmo:
-  1. Executa N_RODADAS vezes independentes
+  1. Executa N_RODADAS repetições de medição
   2. Coleta métricas por rodada (tempo, nós, custo, saltos, memória)
   3. Calcula média e desvio padrão
   4. Exporta resultados brutos e sumário em CSV
@@ -13,7 +13,7 @@ Saída:
 
 Conformidade com a rubrica:
   - ≥ 5 pares origem-destino distintos       (PARES_TESTE)
-  - ≥ 5 execuções independentes por par      (N_RODADAS)
+  - ≥ 5 repetições de medição por par        (N_RODADAS)
   - Médias e desvios padrão para cada métrica
   - Visualização Pyvis gerada para cada algoritmo no primeiro par
 
