@@ -8,6 +8,7 @@
 \usepackage[utf8]{inputenc}
 \usepackage[T1]{fontenc}
 \usepackage[brazil]{babel}
+\addto\captionsbrazil{\renewcommand{\abstractname}{Abstract}}
 \usepackage{cite}
 \usepackage{amsmath,amssymb}
 \usepackage{graphicx}
@@ -16,6 +17,7 @@
 \usepackage{xcolor}
 \usepackage{algorithm}
 \usepackage{algorithmic}
+\usepackage{multirow}
 
 \graphicspath{{figures/}}
 
@@ -63,9 +65,10 @@ Dijkstra, A*, admissible heuristic
 \section{Introdução}
 
 Redes \textit{backhaul} sem fio para \textit{smart grid} possuem requisitos 
-de latência, confiabilidade e custo operacional que são conflitantes. A 
-seleção de rotas nessas redes pode ser modelada como um problema de busca em 
-grafo ponderado, no qual os pesos dos enlaces refletem métricas físicas da 
+de latência, confiabilidade e custo operacional que podem ser difíceis de 
+coordenar para se ter uma excelência de performance no tráfego de dados. Desta
+forma, a seleção de rotas nessas redes pode ser modelada como um problema de 
+busca em grafo ponderado, no qual os pesos dos enlaces refletem métricas físicas da 
 camada de rádio frequência (RF): RSSI, SNR, latência e taxa de perda de pacotes
 \cite{rappaport2002}.
 
@@ -123,15 +126,16 @@ A rede é modelada como um grafo não-direcionado $G = (V, E)$ com $|V| = 25$
 nós e $|E| = 34$ arestas. Os nós pertencem a três categorias:
 
 \begin{itemize}
-  \item \textbf{AP} (3 nós): Access Points com conexão ao backbone cabeado;
-  \item \textbf{SAF} (7 nós): repetidores Store-and-Forward;
-  \item \textbf{Remote} (15 nós): concentradores de medidores inteligentes.
+  \item \textbf{AP} (3 nós): \textit{Access Points} com conexão ao \textit{backbone} cabeado;
+  \item \textbf{SAF} (7 nós): repetidores \textit{Store-and-Forward};
+  \item \textbf{\textit{Remote}} (15 nós): concentradores de medidores inteligentes.
 \end{itemize}
 
 \begin{figure}[t]
   \centering
   \includegraphics[width=\columnwidth]{fig_topologia.pdf}
   \caption{Topologia sintética da rede de backhaul (25 nós, 34 enlaces).
+           Estrela vermelha: AP; quadrado laranja: SAF; círculo verde: Remote.
            O caminho ótimo Dijkstra para P1 (REM-01$\to$AP-01) está
            destacado em azul.}
   \label{fig:topo}
@@ -139,15 +143,19 @@ nós e $|E| = 34$ arestas. Os nós pertencem a três categorias:
 
 \subsection{Modelo de Propagação}
 
-Os parâmetros de enlace são gerados pelo modelo de Friis para perda no
+Os parâmetros de enlace são gerados pelo modelo de Friis, utilizada em Telecomunicações para perda no
 espaço livre (ITU-R P.525) com sombreamento log-normal:
 
 \begin{equation}
   PL(d) = 20\log_{10}(d) + 20\log_{10}(f) + 20\log_{10}\!\left(\frac{4\pi}{c}\right) + X_\sigma
 \end{equation}
 
-onde $d$ é a distância em metros, $f = 928\,\text{MHz}$,
-$X_\sigma \sim \mathcal{N}(0, 7^2)$~dB.
+onde $PL(d)$ é a perda de percurso em dB, $d$ é a distância em metros,
+$f = 928\,\text{MHz}$, $c \approx 3{\times}10^8\,\text{m/s}$, e
+$X_\sigma \sim \mathcal{N}(0, 7^2)$~dB é o sombreamento log-normal —
+variação estocástica da atenuação causada por reflexão e difração no
+terreno, com desvio padrão de 7~dB típico para enlaces externos
+\cite{rappaport2002}.
 
 O RSSI (\textit{Received Signal Strength Indicator}) representa a potência
 recebida do enlace em dBm, enquanto o SNR (\textit{Signal-to-Noise Ratio})
@@ -155,15 +163,19 @@ mede a margem entre essa potência recebida e o ruído de fundo. Em termos
 práticos, SNR maior indica enlace mais robusto, com maior capacidade efetiva
 e menor tendência a perdas.
 
-O throughput efetivo é estimado pela capacidade de Shannon com eficiência
+O \textit{throughput} efetivo é estimado pela capacidade de Shannon com eficiência
 prática de 55\%:
 
 \begin{equation}
   C = 0{,}55 \cdot B \cdot \log_2(1 + \text{SNR}_\text{lin})
 \end{equation}
 
-com $B = 200\,\text{kHz}$ (modo narrow-band SCADA do GE MDS MCR
-\cite{ge_mds_mcr}).
+Esse fator 0{,}55 de eficiência de Shannon é a fração da capacidade teórica de
+canal efetivamente realizável em sistemas reais, que inclui \textit{overhead} de
+codificação de canal, cabeçalhos de protocolo e perdas de implementação
+típicas de rádios industriais em banda estreita \cite{rappaport2002}.
+A largura de banda adotada é $B = 200\,\text{kHz}$, correspondente ao
+modo \textit{narrow-band} SCADA do GE MDS MCR \cite{ge_mds_mcr}.
 
 A latência sintética do enlace combina uma parcela fixa, atraso de
 propagação e variação de enfileiramento:
@@ -192,9 +204,9 @@ Latência base & 5~ms \\
 Variação de fila & $U(3,15)$~ms \\
 Referência de latência & 20~ms \\
 Referência de perda & 15\% \\
-Referência de throughput & SNR = 25~dB; $C_{max}=914{,}0$~kbps \\
+Referência de \textit{throughput} & SNR = 25~dB; $C_{max}=914{,}0$~kbps \\
 Pesos do custo & $\alpha=0{,}4$, $\beta=0{,}4$, $\gamma=0{,}2$ \\
-Semente aleatória & 42 \\
+\textit{seed} aleatória & 42 \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -261,19 +273,19 @@ Ambos têm complexidade $O(V+E)$.
 
 Cinco pares origem-destino cobrem cenários distintos do backhaul:
 
-\begin{table}[h]
-\caption{Pares de teste}
+\begin{table}[t]
+\caption{Pares de teste e tipo de cenário}
 \label{tab:pares}
 \centering
-\begin{tabular}{lll}
+\begin{tabular}{clll}
 \toprule
-\# & Origem & Destino \\
+\# & Origem  & Destino & Tipo \\
 \midrule
-1 & REM-01 & AP-01   \\
-2 & REM-14 & AP-02   \\
-3 & REM-01 & REM-15  \\
-4 & REM-07 & REM-12  \\
-5 & REM-02 & REM-09  \\
+1  & REM-01  & AP-01   & Remote $\to$ AP \\
+2  & REM-14  & AP-02   & Remote $\to$ AP \\
+3  & REM-01  & REM-15  & Remote $\to$ Remote \\
+4  & REM-07  & REM-12  & Remote $\to$ Remote \\
+5  & REM-02  & REM-09  & Remote $\to$ Remote \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -282,11 +294,11 @@ Os experimentos foram executados em um laptop com processador Intel Core
 Ultra~5 125U (frequência máxima 4,30\,GHz) e 16\,GB de memória DDR5-5600.
 
 Cada par foi medido em $N = 5$ repetições por algoritmo em Python
-(versão 3.13.13), usando uma base SQLite sintética gerada com semente fixa
+(versão 3.13.13), usando uma base SQLite sintética gerada com \textit{seed} fixa
 (\texttt{seed=42}). Como a topologia, os pesos e a ordem de vizinhança são
 determinísticos, as repetições medem a variabilidade de tempo e memória, não
 novas amostras topológicas. Métricas coletadas: tempo de execução (ms), nós
-expandidos, custo do caminho, comprimento (saltos) e memória de pico (KB).
+expandidos, custo do caminho, comprimento (saltos) e pico de memória (KB).
 Os tempos de execução são inferiores a 1\,ms, portanto flutuações causadas
 por interrupções do sistema operacional, garbage collection do Python ou
 variações de cache de CPU dominam a variância temporal; a métrica mais
@@ -295,43 +307,48 @@ informativa neste experimento é a expansão de nós.
 \subsection{Resultados}
 
 \begin{table*}[t]
-\caption{Resultados médios por par e algoritmo ($N=5$)}
+\caption{Resultados médios por par e algoritmo ($N=5$). Coluna Sobrecusto: percentual de custo acima do ótimo (Dijkstra/A*).}
 \label{tab:resultados}
 \centering
 \scriptsize
-\begin{tabular}{cllrrrrr}
+\begin{tabular}{cllrrrrrr}
 \toprule
-\# & Origem--Destino & Algoritmo & Tempo (ms) & Nós & Custo & Saltos & Mem. (KB) \\
+\# & Origem--Destino & Algoritmo & Tempo (ms) & Nós & Custo & Saltos & Mem.\ (KB) & Sobrecusto (\%) \\
 \midrule
-1 & REM-01--AP-01 & Dijkstra   & 0.0285 & 4 & 96.0339 & 2 & 3.02 \\
-1 & REM-01--AP-01 & A*         & 0.0267 & 3 & 96.0339 & 2 & 2.78 \\
-1 & REM-01--AP-01 & Gananciosa & 0.1070 & 3 & 96.0339 & 2 & 0.64 \\
-1 & REM-01--AP-01 & BFS        & 0.0134 & 3 & 96.0339 & 2 & 1.32 \\
-1 & REM-01--AP-01 & DFS        & 0.0232 & 3 & 96.0339 & 2 & 0.67 \\
+\multirow{5}{*}{1} & \multirow{5}{*}{REM-01--AP-01}
+  & Dijkstra   & 0.0285 & 4  & 96.0339  & 2 & 3.02 & 0.0  \\
+& & A*         & 0.0267 & 3  & 96.0339  & 2 & 2.78 & 0.0  \\
+& & Gananciosa & 0.1070 & 3  & 96.0339  & 2 & 0.64 & 0.0  \\
+& & BFS        & 0.0134 & 3  & 96.0339  & 2 & 1.32 & 0.0  \\
+& & DFS        & 0.0232 & 3  & 96.0339  & 2 & 0.67 & 0.0  \\
 \midrule
-2 & REM-14--AP-02 & Dijkstra   & 0.0484 & 9 & 220.0779 & 3 & 3.09 \\
-2 & REM-14--AP-02 & A*         & 0.0518 & 7 & 220.0779 & 3 & 3.03 \\
-2 & REM-14--AP-02 & Gananciosa & 0.0481 & 6 & 332.9257 & 5 & 2.27 \\
-2 & REM-14--AP-02 & BFS        & 0.0211 & 7 & 220.0779 & 3 & 1.54 \\
-2 & REM-14--AP-02 & DFS        & 0.0247 & 4 & 220.0779 & 3 & 1.06 \\
+\multirow{5}{*}{2} & \multirow{5}{*}{REM-14--AP-02}
+  & Dijkstra   & 0.0484 & 9  & 220.0779 & 3 & 3.09 &  0.0 \\
+& & A*         & 0.0518 & 7  & 220.0779 & 3 & 3.03 &  0.0 \\
+& & Gananciosa & 0.0481 & 6  & 332.9257 & 5 & 2.27 & 51.3 \\
+& & BFS        & 0.0211 & 7  & 220.0779 & 3 & 1.54 &  0.0 \\
+& & DFS        & 0.0247 & 4  & 220.0779 & 3 & 1.06 &  0.0 \\
 \midrule
-3 & REM-01--REM-15 & Dijkstra   & 0.0899 & 24 & 353.7164 & 6 & 5.30 \\
-3 & REM-01--REM-15 & A*         & 0.1149 & 19 & 353.7164 & 6 & 5.28 \\
-3 & REM-01--REM-15 & Gananciosa & 0.0850 & 12 & 490.2619 & 8 & 3.80 \\
-3 & REM-01--REM-15 & BFS        & 0.0606 & 25 & 353.7164 & 6 & 3.62 \\
-3 & REM-01--REM-15 & DFS        & 0.0871 & 25 & 353.7164 & 6 & 5.21 \\
+\multirow{5}{*}{3} & \multirow{5}{*}{REM-01--REM-15}
+  & Dijkstra   & 0.0899 & 24 & 353.7164 & 6 & 5.30 &  0.0 \\
+& & A*         & 0.1149 & 19 & 353.7164 & 6 & 5.28 &  0.0 \\
+& & Gananciosa & 0.0850 & 12 & 490.2619 & 8 & 3.80 & 38.6 \\
+& & BFS        & 0.0606 & 25 & 353.7164 & 6 & 3.62 &  0.0 \\
+& & DFS        & 0.0871 & 25 & 353.7164 & 6 & 5.21 &  0.0 \\
 \midrule
-4 & REM-07--REM-12 & Dijkstra   & 0.0835 & 22 & 321.9345 & 5 & 5.27 \\
-4 & REM-07--REM-12 & A*         & 0.1001 & 15 & 321.9345 & 5 & 3.35 \\
-4 & REM-07--REM-12 & Gananciosa & 0.0491 & 6 & 331.0824 & 5 & 2.27 \\
-4 & REM-07--REM-12 & BFS        & 0.0499 & 22 & 338.3551 & 5 & 3.69 \\
-4 & REM-07--REM-12 & DFS        & 0.0735 & 15 & 321.9345 & 5 & 3.83 \\
+\multirow{5}{*}{4} & \multirow{5}{*}{REM-07--REM-12}
+  & Dijkstra   & 0.0835 & 22 & 321.9345 & 5 & 5.27 & 0.0 \\
+& & A*         & 0.1001 & 15 & 321.9345 & 5 & 3.35 & 0.0 \\
+& & Gananciosa & 0.0491 & 6  & 331.0824 & 5 & 2.27 & 2.8 \\
+& & BFS        & 0.0499 & 22 & 338.3551 & 5 & 3.69 & 5.1 \\
+& & DFS        & 0.0735 & 15 & 321.9345 & 5 & 3.83 & 0.0 \\
 \midrule
-5 & REM-02--REM-09 & Dijkstra   & 0.1092 & 18 & 292.1468 & 5 & 3.39 \\
-5 & REM-02--REM-09 & A*         & 0.0664 & 14 & 292.1468 & 5 & 3.38 \\
-5 & REM-02--REM-09 & Gananciosa & 0.0409 & 9 & 335.2922 & 5 & 2.35 \\
-5 & REM-02--REM-09 & BFS        & 0.0608 & 19 & 292.1468 & 5 & 3.74 \\
-5 & REM-02--REM-09 & DFS        & 0.0852 & 17 & 292.1468 & 5 & 4.00 \\
+\multirow{5}{*}{5} & \multirow{5}{*}{REM-02--REM-09}
+  & Dijkstra   & 0.1092 & 18 & 292.1468 & 5 & 3.39 &  0.0 \\
+& & A*         & 0.0664 & 14 & 292.1468 & 5 & 3.38 &  0.0 \\
+& & Gananciosa & 0.0409 & 9  & 335.2922 & 5 & 2.35 & 14.8 \\
+& & BFS        & 0.0608 & 19 & 292.1468 & 5 & 3.74 &  0.0 \\
+& & DFS        & 0.0852 & 17 & 292.1468 & 5 & 4.00 &  0.0 \\
 \bottomrule
 \end{tabular}
 \end{table*}
@@ -350,7 +367,9 @@ resultado decorre da ordem de vizinhança e não constitui garantia algorítmica
   \caption{Nós expandidos por algoritmo nos cinco pares de teste.
            P1: REM-01$\to$AP-01; P2: REM-14$\to$AP-02;
            P3: REM-01$\to$REM-15; P4: REM-07$\to$REM-12;
-           P5: REM-02$\to$REM-09.}
+           P5: REM-02$\to$REM-09.
+           O total de nós do grafo é $|V|=25$; algoritmos que atingem esse
+           valor executam busca quase exaustiva.}
   \label{fig:nos}
 \end{figure}
 
@@ -359,7 +378,8 @@ resultado decorre da ordem de vizinhança e não constitui garantia algorítmica
   \includegraphics[width=\columnwidth]{fig_custo_caminho.pdf}
   \caption{Custo do caminho retornado por algoritmo nos cinco pares de teste.
            Dijkstra e A* preservam o custo ótimo; a busca gananciosa apresenta
-           sobrecusto em quatro pares e BFS falha no par P4.}
+           sobrecusto em quatro pares; BFS apresenta sobrecusto de 5{,}1\% no
+           par P4.}
   \label{fig:custo}
 \end{figure}
 
@@ -393,37 +413,67 @@ de 77 para 58 nós (24{,}7\%). O custo temporal medido é muito pequeno para
 todos os algoritmos por causa da escala reduzida do grafo, portanto a métrica
 mais informativa neste experimento é a expansão de nós, não o tempo absoluto.
 
-O consumo de memória de pico, medido via \texttt{tracemalloc}, reflete
-diretamente o tamanho das estruturas abertas de cada algoritmo. A busca
+O consumo de memória, medido via \texttt{tracemalloc}, reflete diretamente o 
+tamanho das estruturas abertas de cada algoritmo. A busca
 gananciosa registrou o menor consumo médio (2,31\,KB), pois mantém uma fila
 de prioridade pequena ao direcionar a busca pela heurística. BFS e DFS
 apresentaram valores intermediários (2,78 e 2,95\,KB, respectivamente).
 A* e Dijkstra registraram os maiores consumos (3,56 e 4,01\,KB), reflexo
 das filas de prioridade que armazenam todos os nós abertos com seus custos.
 Em grafos maiores, essa diferença cresce proporcionalmente ao número de nós
-expandidos, tornando-se relevante em redes de smart grid com centenas de nós.
+expandidos, tornando-se relevante em redes \textit{smart grid} com centenas de nós.
+
+A Tabela~\ref{tab:agregado} consolida as métricas agregadas e permite comparar
+os cinco algoritmos em função de eficiência, consumo de memória, qualidade de
+solução e garantia de otimalidade.
+
+\begin{table}[t]
+\caption{Comparação agregada nos cinco pares (ordenada por nós totais expandidos)}
+\label{tab:agregado}
+\centering
+\scriptsize
+\begin{tabular}{lrrrr}
+\toprule
+Algoritmo  & Nós total       & Mem.\ méd.\ (KB) & Sobrecusto méd. & Ótimo? \\
+\midrule
+Gananciosa & \textbf{36}     & \textbf{2.27}    & 21.5\%          & Não    \\
+A*         & \textbf{58}     & 3.56             & \textbf{0\%}    & Sim    \\
+DFS        & 64              & 2.95             & 0\%$^\dagger$   & Não    \\
+BFS        & 76              & 2.78             & 1.0\%           & Não    \\
+Dijkstra   & 77              & 4.01             & \textbf{0\%}    & Sim    \\
+\bottomrule
+\multicolumn{5}{l}{$^\dagger$Resultado topologia-dependente, sem garantia algorítmica.} \\
+\end{tabular}
+\end{table}
 
 \subsection{Complexidade Assintótica}
 
 A Tabela~\ref{tab:bigO} resume as complexidades de tempo e espaço dos
-cinco algoritmos. Na prática, a constante oculta de A* é menor que a de
-Dijkstra quando a heurística é informativa; o pior caso de A* degenera
-para Dijkstra quando $h(n) = 0$.
+cinco algoritmos, acrescidas das propriedades de otimalidade e completude.
+Na prática, a constante oculta de A* é menor que a de Dijkstra quando a
+heurística é informativa; o pior caso de A* degenera para Dijkstra quando
+$h(n) = 0$. Note que BFS é ótimo apenas em grafos não-ponderados, onde
+minimiza o número de saltos, não o custo composto.
 
-\begin{table}[ht]
-\caption{Complexidade assintótica}
+\begin{table}[t]
+\caption{Complexidade assintótica e propriedades algorítmicas}
 \label{tab:bigO}
 \centering
-\begin{tabular}{lcc}
+\scriptsize
+\begin{tabular}{lcccc}
 \toprule
-Algoritmo   & Tempo           & Espaço  \\
+Algoritmo  & Tempo            & Espaço & Ótimo?   & Completo? \\
 \midrule
-Dijkstra    & $O((V+E)\log V)$ & $O(V)$ \\
-A*          & $O((V+E)\log V)$ & $O(V)$ \\
-Gananciosa  & $O((V+E)\log V)$ & $O(V)$ \\
-BFS         & $O(V+E)$        & $O(V)$  \\
-DFS         & $O(V+E)$        & $O(V)$  \\
+Dijkstra   & $O((V{+}E)\log V)$ & $O(V)$ & Sim$^a$  & Sim \\
+A*         & $O((V{+}E)\log V)$ & $O(V)$ & Sim$^b$  & Sim \\
+Gananciosa & $O((V{+}E)\log V)$ & $O(V)$ & Não      & Sim \\
+BFS        & $O(V{+}E)$         & $O(V)$ & Não$^c$  & Sim \\
+DFS        & $O(V{+}E)$         & $O(V)$ & Não      & Sim$^d$ \\
 \bottomrule
+\multicolumn{5}{l}{$^a$Válido para pesos não-negativos.} \\
+\multicolumn{5}{l}{$^b$Válido com heurística admissível e consistente.} \\
+\multicolumn{5}{l}{$^c$Ótimo apenas em grafos não-ponderados (mínimo de saltos).} \\
+\multicolumn{5}{l}{$^d$Com detecção de ciclos em grafo finito.} \\
 \end{tabular}
 \end{table}
 
@@ -437,16 +487,28 @@ mas reduz a expansão de nós pela heurística geográfica. A busca gananciosa
 é atrativa quando o objetivo é resposta rápida com baixo consumo de memória,
 mas o sobrecusto observado em quatro pares a torna inadequada como decisão
 primária de roteamento para enlaces críticos.
+A Figura~\ref{fig:tradeoff} sintetiza esse \textit{trade-off} no espaço
+eficiência--qualidade para os cinco algoritmos avaliados.
+
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=\columnwidth]{fig_tradeoff.pdf}
+  \caption{Diagrama de dispersão eficiência--qualidade: total de nós expandidos
+           \emph{vs.}\ sobrecusto médio em relação ao custo ótimo.
+           A* domina Dijkstra, reduzindo 24{,}7\% das expansões sem perda de
+           otimalidade. Gananciosa minimiza expansões ao custo de 21{,}5\% de
+           sobrecusto médio de rota.}
+  \label{fig:tradeoff}
+\end{figure}
 
 % =============================================================================
 \section{Conclusão}
 
-Este trabalho comparou Dijkstra, A*, busca gananciosa, BFS e DFS em uma
-topologia sintética de backhaul sem fio para smart grid. A função de custo
-composto integrou latência normalizada, throughput normalizado e perda de
-pacotes normalizada,
-enquanto a heurística euclidiana escalonada permitiu aplicar A* preservando
-admissibilidade e consistência.
+Este trabalho comparou Dijkstra, A*, Busca Gananciosa, BFS e DFS em uma
+topologia sintética de \textit{backhaul} sem fio para \textit{smart grid}. A 
+função de custo composto integrou latência normalizada, \textit{throughput} normalizado
+e perda de pacotes normalizada, enquanto a heurística euclidiana escalonada 
+permitiu aplicar A* preservando admissibilidade e consistência.
 
 Os resultados mostram que A* manteve o mesmo custo ótimo do Dijkstra nos
 cinco pares avaliados e reduziu a expansão total de nós em 24{,}7\%. A busca
@@ -455,11 +517,12 @@ pares, chegando a 51{,}3\%. BFS e DFS permanecem úteis como linhas de base
 didáticas, porém não devem ser usados como estratégia principal em grafos
 ponderados quando o custo do enlace representa qualidade operacional.
 
-Como trabalhos futuros, recomenda-se ampliar o conjunto de topologias
-sintéticas, variar os pesos $\alpha$, $\beta$ e $\gamma$ da função de custo
+Em futuros trabalhos, pode-se ampliar o conjunto de topologias sintéticas, 
+variar os pesos $\alpha$, $\beta$ e $\gamma$ da função de custo
 conforme perfis de tráfego SCADA distintos e estender a avaliação para grafos
-direcionados com métricas de enlace dinâmicas, cenário mais realista para
-enlaces de rádio sujeitos a variações de propagação ao longo do tempo.
+direcionados com métricas de enlace dinâmicas, cenário mais amplos em condições
+de contorno para enlaces de rádio sujeitos a variações de propagação ao longo 
+do tempo.
 
 % =============================================================================
 \bibliographystyle{IEEEtran}
