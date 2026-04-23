@@ -76,8 +76,9 @@ def _fig_nos_expandidos(dados):
     ax.set_xticklabels([PAR_LABELS[p] for p in pares], fontsize=6.5)
     ax.set_ylabel('Nós expandidos', fontsize=7)
     ax.set_ylim(0, 30)
+    ax.axhline(25, color='black', linestyle='--', linewidth=0.8, label='$|V|{=}25$')
     ax.yaxis.set_tick_params(labelsize=7)
-    ax.legend(fontsize=5.5, ncol=5, loc='upper left',
+    ax.legend(fontsize=5.5, ncol=6, loc='upper left',
               columnspacing=0.5, handlelength=1.2, handletextpad=0.4)
     ax.grid(axis='y', linestyle=':', linewidth=0.5, alpha=0.7)
     ax.spines[['top', 'right']].set_visible(False)
@@ -133,8 +134,8 @@ def _fig_topologia():
 
     grafo = carregar_grafo()
 
-    # Caminho Dijkstra Par 1: REM-01 (11) → AP-01 (1)
-    resultado = medir(dijkstra)(grafo, 11, 1)
+    # Caminho Dijkstra Par 3: REM-01 (11) → REM-15 (25) — diagonal máxima, 6 saltos
+    resultado = medir(dijkstra)(grafo, 11, 25)
     caminho_ids = set()
     path = resultado.get('caminho', [])
     for i in range(len(path) - 1):
@@ -188,7 +189,7 @@ def _fig_topologia():
                       markeredgecolor='black', markeredgewidth=0.4,
                       markersize=5, label='Remote'),
         mlines.Line2D([], [], color='#1f77b4', linewidth=2,
-                      label='Dijkstra P1'),
+                      label='Dijkstra P3'),
     ]
     ax.legend(handles=handles, fontsize=6, loc='upper left',
               framealpha=0.8, handlelength=1.2)

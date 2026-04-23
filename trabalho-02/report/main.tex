@@ -41,19 +41,18 @@
 % =============================================================================
 \begin{abstract}
 This paper presents a comparative analysis of five graph search algorithms
--- Dijkstra, Greedy Best-First Search, A*, BFS, and DFS -- applied to a
-wireless backhaul network for smart grid scenarios. The experimental topology
-contains 25 nodes organized into three layers: Access Points,
-Store-and-Forward nodes, and Remotes. Edge weights are derived from a
-composite cost function based on normalized latency, normalized throughput,
-and normalized packet loss rate, parameterized using public specifications of
-the GE MDS Orbit MCR 900~MHz radio and the Friis propagation model with
-log-normal shadowing. Results show that A* reduces total node expansion by
-24.7\% compared with Dijkstra while preserving the same optimal cost across
-the five evaluated source-destination pairs. Greedy search expands fewer
-nodes but produces higher-cost paths in four of the five pairs; BFS and DFS
-serve as uninformed baselines without optimality guarantees in weighted
-graphs.
+-- Dijkstra, Greedy Best-First Search, A*, Breadth-First Search, and Depth-First
+Search -- applied to a wireless backhaul network for smart grid scenarios. 
+The experimental topology contains 25 nodes organized into three layers: 
+Access Points, Store-and-Forward nodes, and Remotes. Edge weights are derived 
+from a composite cost function based on latency, throughput, and packet loss rate,
+all normalized and parameterized using public specifications of the GE MDS 
+Orbit MCR 900~MHz radio and the Friis propagation model with log-normal shadowing. 
+Results show that A* reduces total node expansion by 24.7\% compared with 
+Dijkstra while preserving the same optimal cost across the five evaluated 
+source-destination pairs. Greedy search expands fewer nodes but produces 
+higher-cost paths in four of the five pairs; BFS and DFS serve as uninformed 
+baselines without optimality guarantees in weighted graphs.
 \end{abstract}
 
 \begin{IEEEkeywords}
@@ -107,7 +106,7 @@ No domínio de redes de comunicação, a escolha do algoritmo de roteamento
 depende não apenas da complexidade assintótica, mas também da semântica do
 peso de enlace. O algoritmo de Dijkstra foi aplicado em redes de distribuição
 de nós para minimização de perdas de roteamento \cite{jha2013dijkstra}.
-A comparação entre A* e Dijkstra em roteamento QoS
+A comparação entre A* e Dijkstra em roteamento QoS (\textit{Quality of Service})
 \cite{ayari2025astar} demonstra redução de nós expandidos com heurística
 geográfica, resultado que também se aplica a topologias de \textit{smart grid}.
 Everitt e Hutter \cite{everitt2015bfsdfs} analisam BFS e DFS como linhas
@@ -123,7 +122,8 @@ avaliar os algoritmos sem expor dados operacionais sensíveis das redes em anál
 \subsection{Topologia}
 
 A rede é modelada como um grafo não-direcionado $G = (V, E)$ com $|V| = 25$
-nós e $|E| = 34$ arestas. Os nós pertencem a três categorias:
+nós e $|E| = 34$ arestas, conforme ilustrado na Figura~\ref{fig:topo}.
+Os nós pertencem a três categorias:
 
 \begin{itemize}
   \item \textbf{AP} (3 nós): \textit{Access Points} com conexão ao \textit{backbone} cabeado;
@@ -136,8 +136,8 @@ nós e $|E| = 34$ arestas. Os nós pertencem a três categorias:
   \includegraphics[width=\columnwidth]{fig_topologia.pdf}
   \caption{Topologia sintética da rede de backhaul (25 nós, 34 enlaces).
            Estrela vermelha: AP; quadrado laranja: SAF; círculo verde: Remote.
-           O caminho ótimo Dijkstra para P1 (REM-01$\to$AP-01) está
-           destacado em azul.}
+           O caminho ótimo Dijkstra para P3 (REM-01$\to$REM-15, diagonal
+           máxima, 6 saltos) está destacado em azul.}
   \label{fig:topo}
 \end{figure}
 
@@ -262,8 +262,9 @@ Rápida, mas não garante otimalidade.
 
 \subsection{BFS e DFS}
 
-BFS (fila FIFO) garante mínimo de saltos em grafos não-ponderados.
-DFS (pilha LIFO) não oferece garantia alguma de otimalidade.
+BFS (fila FIFO – \textit{First In First Out}) garante mínimo de saltos em grafos 
+não-ponderados.
+DFS (pilha LIFO – \textit{Last In first Out}) não oferece garantia alguma de otimalidade.
 Ambos têm complexidade $O(V+E)$.
 
 % =============================================================================
@@ -355,11 +356,13 @@ informativa neste experimento é a expansão de nós.
 
 No agregado, Dijkstra expandiu 77 nós nos cinco pares, enquanto A* expandiu
 58, uma redução de 24{,}7\% mantendo custo idêntico ao ótimo em todos os
-casos. A busca gananciosa foi a mais econômica em expansão média
+casos. A Busca Gananciosa foi a mais econômica em expansão média
 (7{,}2 nós), mas apresentou custo médio 21{,}5\% superior ao ótimo. BFS foi
 rápido em tempo absoluto, mas expandiu mais nós que A* e teve custo 5{,}1\%
 maior no par 4. DFS coincidiu com o custo ótimo nesta topologia, mas esse
 resultado decorre da ordem de vizinhança e não constitui garantia algorítmica.
+A Figura~\ref{fig:nos} compara visualmente a expansão de nós por algoritmo
+em cada par de teste.
 
 \begin{figure}[t]
   \centering
@@ -377,7 +380,7 @@ resultado decorre da ordem de vizinhança e não constitui garantia algorítmica
   \centering
   \includegraphics[width=\columnwidth]{fig_custo_caminho.pdf}
   \caption{Custo do caminho retornado por algoritmo nos cinco pares de teste.
-           Dijkstra e A* preservam o custo ótimo; a busca gananciosa apresenta
+           Dijkstra e A* preservam o custo ótimo; a Busca Gananciosa apresenta
            sobrecusto em quatro pares; BFS apresenta sobrecusto de 5{,}1\% no
            par P4.}
   \label{fig:custo}
@@ -391,7 +394,7 @@ resultado decorre da ordem de vizinhança e não constitui garantia algorítmica
 Dijkstra e A* retornam, por construção, o caminho de custo mínimo segundo
 a função \eqref{eq:peso}. Os resultados confirmam custos idênticos para
 ambos nos cinco pares avaliados, validando empiricamente a implementação
-da heurística admissível. A busca gananciosa mostra o trade-off esperado:
+da heurística admissível. A Busca Gananciosa mostra o trade-off esperado:
 em quatro pares encontrou caminhos de custo superior ao ótimo, com
 sobrecusto máximo de 51{,}3\% no par REM-14--AP-02. A
 Figura~\ref{fig:custo} evidencia visualmente essa diferença entre esforço
@@ -414,8 +417,8 @@ todos os algoritmos por causa da escala reduzida do grafo, portanto a métrica
 mais informativa neste experimento é a expansão de nós, não o tempo absoluto.
 
 O consumo de memória, medido via \texttt{tracemalloc}, reflete diretamente o 
-tamanho das estruturas abertas de cada algoritmo. A busca
-gananciosa registrou o menor consumo médio (2,31\,KB), pois mantém uma fila
+tamanho das estruturas abertas de cada algoritmo. A Busca
+Gananciosa registrou o menor consumo médio (2,31\,KB), pois mantém uma fila
 de prioridade pequena ao direcionar a busca pela heurística. BFS e DFS
 apresentaram valores intermediários (2,78 e 2,95\,KB, respectivamente).
 A* e Dijkstra registraram os maiores consumos (3,56 e 4,01\,KB), reflexo
@@ -483,7 +486,7 @@ Em redes \textit{smart grid}, o custo de falha de entrega de um pacote de
 controle SCADA supera o custo computacional de qualquer algoritmo nesta escala.
 Portanto, a prioridade é otimalidade e previsibilidade da rota. A* apresenta
 o melhor equilíbrio neste experimento: garante otimalidade como Dijkstra,
-mas reduz a expansão de nós pela heurística geográfica. A busca gananciosa
+mas reduz a expansão de nós pela heurística geográfica. A Busca Gananciosa
 é atrativa quando o objetivo é resposta rápida com baixo consumo de memória,
 mas o sobrecusto observado em quatro pares a torna inadequada como decisão
 primária de roteamento para enlaces críticos.
@@ -504,15 +507,15 @@ eficiência--qualidade para os cinco algoritmos avaliados.
 % =============================================================================
 \section{Conclusão}
 
-Este trabalho comparou Dijkstra, A*, Busca Gananciosa, BFS e DFS em uma
+Este artigo comparou Dijkstra, A*, Busca Gananciosa, BFS e DFS em uma
 topologia sintética de \textit{backhaul} sem fio para \textit{smart grid}. A 
-função de custo composto integrou latência normalizada, \textit{throughput} normalizado
-e perda de pacotes normalizada, enquanto a heurística euclidiana escalonada 
+função de custo composto integrou latência, \textit{throughput} e perda de 
+pacotes, todos normalizados, enquanto a heurística euclidiana escalonada 
 permitiu aplicar A* preservando admissibilidade e consistência.
 
 Os resultados mostram que A* manteve o mesmo custo ótimo do Dijkstra nos
-cinco pares avaliados e reduziu a expansão total de nós em 24{,}7\%. A busca
-gananciosa expandiu menos nós, mas introduziu sobrecusto de rota em quatro
+cinco pares avaliados e reduziu a expansão total de nós em 24{,}7\%. A Busca
+Gananciosa expandiu menos nós, mas introduziu sobrecusto de rota em quatro
 pares, chegando a 51{,}3\%. BFS e DFS permanecem úteis como linhas de base
 didáticas, porém não devem ser usados como estratégia principal em grafos
 ponderados quando o custo do enlace representa qualidade operacional.
@@ -520,9 +523,9 @@ ponderados quando o custo do enlace representa qualidade operacional.
 Em futuros trabalhos, pode-se ampliar o conjunto de topologias sintéticas, 
 variar os pesos $\alpha$, $\beta$ e $\gamma$ da função de custo
 conforme perfis de tráfego SCADA distintos e estender a avaliação para grafos
-direcionados com métricas de enlace dinâmicas, cenário mais amplos em condições
-de contorno para enlaces de rádio sujeitos a variações de propagação ao longo 
-do tempo.
+direcionados com métricas de enlace dinâmicas, utilizando cenários mais amplos
+em condições de contorno para enlaces de rádio sujeitos a variações de 
+propagação ao longo do tempo.
 
 % =============================================================================
 \bibliographystyle{IEEEtran}
