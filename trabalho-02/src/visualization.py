@@ -57,6 +57,7 @@ def renderizar(
     algoritmo: str,
     caminho: Optional[List[int]] = None,
     saida: str = 'results/graphs',
+    par: Optional[str] = None,
 ) -> str:
     """
     Gera um HTML Pyvis do grafo com o caminho destacado.
@@ -132,10 +133,10 @@ def renderizar(
     adicionadas: set = set()
     for src_id in grafo.nos:
         for dst_id, peso, attrs in grafo.vizinhos(src_id):
-            par = (min(src_id, dst_id), max(src_id, dst_id))
-            if par in adicionadas:
+            chave = (min(src_id, dst_id), max(src_id, dst_id))
+            if chave in adicionadas:
                 continue
-            adicionadas.add(par)
+            adicionadas.add(chave)
 
             no_caminho  = (src_id, dst_id) in arestas_caminho
             cor         = COR_ARESTA_CAMINHO if no_caminho else COR_ARESTA_NORMAL
@@ -162,7 +163,11 @@ def renderizar(
             )
 
     nome_alg_limpo = algoritmo.replace('*', 'star').replace(' ', '_').lower()
-    nome_arquivo   = f"{nome_alg_limpo}_caminho.html"
+    if par:
+        par_limpo    = par.replace(' ', '_').replace('-', '_')
+        nome_arquivo = f"{nome_alg_limpo}_{par_limpo}.html"
+    else:
+        nome_arquivo = f"{nome_alg_limpo}_caminho.html"
     caminho_saida  = os.path.join(saida, nome_arquivo)
     net.save_graph(caminho_saida)
     return caminho_saida

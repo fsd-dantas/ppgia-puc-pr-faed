@@ -18,7 +18,8 @@ env/
 
 # ── Dados e resultados gerados (reproduzíveis via script) ────────────────────
 trabalho-*/data/
-trabalho-*/results/
+trabalho-*/results/graphs/*.html
+trabalho-*/results/metrics/
 
 # ── Editores e IDEs ──────────────────────────────────────────────────────────
 .vscode/
