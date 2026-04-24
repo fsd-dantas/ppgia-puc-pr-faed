@@ -42,6 +42,12 @@ Normalização usada: `latência_norm = min(latência_ms / 20, 1)`,
 h(n) = dist_euclidiana(n, destino) × custo_mínimo_por_km
 ```
 
+### Visualização
+
+![Topologia da Rede de Backhaul](results/graphs/topologia_dark.png)
+
+![Pares de Teste](results/graphs/topologia_pares.png)
+
 ---
 
 ## Algoritmos Implementados
@@ -53,6 +59,53 @@ h(n) = dist_euclidiana(n, destino) × custo_mínimo_por_km
 | `src/greedy.py`     | Busca Gananciosa  | Não         |
 | `src/bfs.py`        | BFS               | Saltos mín. |
 | `src/dfs.py`        | DFS               | Não         |
+
+---
+
+## Configuração Experimental
+
+**5 pares · 5 repetições por par · 5 algoritmos = 125 execuções**
+
+| # | Origem | Destino | Tipo de Cenário |
+|---|--------|---------|-----------------|
+| P1 | REM-01 | AP-01   | Remote → AP-raiz (caminho hierárquico típico) |
+| P2 | REM-14 | AP-02   | Extremo leste → AP norte (cross-zone longa distância) |
+| P3 | REM-01 | REM-15  | Extremo oeste → extremo sul (diagonal máxima, 24 nós) |
+| P4 | REM-07 | REM-12  | Cross-branch SAF4→SAF7 (rota com cross-links) |
+| P5 | REM-02 | REM-09  | Remoto SW → Remoto NE (diagonal entre folhas) |
+
+**Métricas coletadas por execução:** tempo (ms) · nós expandidos · custo do caminho · saltos · pico de memória (KB)
+
+> Tempos < 1 ms para todos os algoritmos na escala de 25 nós — variância dominada por interrupções de SO e GC do Python. Métrica mais informativa: **nós expandidos**.
+
+---
+
+## Resultados
+
+### Nós Expandidos (média por par)
+
+| Algoritmo   | P1 | P2 | P3 | P4 | P5 |
+|-------------|----|----|----|----|-----|
+| Dijkstra    |  4 |  9 | 24 | 22 | 18 |
+| A\*          |  3 |  7 | 19 | 15 | 14 |
+| Gananciosa  |  3 |  6 | 12 |  6 |  9 |
+| BFS         |  3 |  7 | 25 | 22 | 19 |
+| DFS         |  3 |  4 | 25 | 15 | 17 |
+
+### Custo do Caminho (média por par)
+
+| Algoritmo   | P1      | P2      | P3      | P4      | P5      |
+|-------------|---------|---------|---------|---------|---------|
+| Dijkstra    |  96.03  | 220.08  | 353.72  | 321.93  | 292.15  |
+| A\*          |  96.03  | 220.08  | 353.72  | 321.93  | 292.15  |
+| Gananciosa  |  96.03  | 332.93  | 490.26  | 331.08  | 335.29  |
+| BFS         |  96.03  | 220.08  | 353.72  | 338.36  | 292.15  |
+| DFS         |  96.03  | 220.08  | 353.72  | 321.93  | 292.15  |
+
+**Observações:**
+- Dijkstra e A\* encontram sempre o caminho ótimo; A\* expande menos nós em cenários de longa distância (P3, P4, P5).
+- Gananciosa expande o menor número de nós mas produz caminhos subótimos em P2–P5 (sobrecusto de até 38%).
+- BFS e DFS garantem o caminho ótimo neste grafo mas expandem tantos nós quanto Dijkstra sem a poda da heurística.
 
 ---
 
@@ -114,9 +167,13 @@ trabalho-02/
 │   ├── dfs.py
 │   ├── metrics.py          # Decorador de instrumentação
 │   ├── runner.py           # Executor de experimentos e exportação CSV
-│   └── visualization.py   # Renderização Pyvis → HTML
+│   ├── visualization.py    # Renderização Pyvis → HTML
+│   └── gerar_grafos.py     # Gera HTMLs para todos os pares × algoritmos
 ├── results/
 │   ├── graphs/
+│   │   ├── topologia_dark.png   # Topologia da rede (estilo escuro)
+│   │   ├── topologia_pares.png  # Topologia com os 5 pares anotados
+│   │   └── <alg>_<par>.html     # Pyvis interativo por algoritmo × par
 │   └── metrics/
 ├── report/
 │   ├── main.tex            # Artigo IEEE (duas colunas, máx. 6 páginas)
